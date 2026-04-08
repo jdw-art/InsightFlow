@@ -137,7 +137,7 @@ class PipelineService:
                         )
                         
                         try:
-                            from services.image_service import AspectRatio, ImageSize, STORYBOOK_STYLE_PREFIX
+                            from src.image_service import AspectRatio, ImageSize, STORYBOOK_STYLE_PREFIX
                             # 第一页使用前端选择的宽高比，其他页保持 16:9
                             if page_idx == 0:
                                 selected_aspect_ratio = AspectRatio.PORTRAIT_9_16 if aspect_ratio == "9:16" else AspectRatio.LANDSCAPE_16_9
@@ -202,7 +202,7 @@ class PipelineService:
     
     def _extract_tech_concepts(self, content: str) -> list:
         """提取技术概念"""
-        from services.transform_service import TransformService
+        from src.transform_service import TransformService
         concepts = []
         content_lower = content.lower()
         for keyword in TransformService.METAPHOR_LIBRARY.keys():
@@ -212,7 +212,7 @@ class PipelineService:
     
     def _find_metaphors(self, concepts: list) -> dict:
         """查找比喻"""
-        from services.transform_service import TransformService
+        from src.transform_service import TransformService
         metaphors = {}
         for concept in concepts:
             concept_lower = concept.lower()

@@ -39,7 +39,7 @@ def _resolve_caller(caller: str) -> str:
     if caller:
         return caller
     try:
-        from services.blog_generator.middleware import current_node_name
+        from src.blog_generator.middleware import current_node_name
         node = current_node_name.get("")
         if node:
             return node
@@ -134,7 +134,7 @@ class LLMService:
         """创建 LangChain ChatModel 实例（优先使用 ClientFactory）"""
         try:
             # 37.29: 尝试通过 ClientFactory 创建（支持多提供商）
-            from services.llm_factory import create_llm_client, PROVIDER_CONFIGS
+            from src.llm_factory import create_llm_client, PROVIDER_CONFIGS
             # 根据模型名动态选择 provider（gemini → google, claude → anthropic, 其他 → provider_format）
             provider = self.provider_format
             api_key = self._openai_api_key or None
