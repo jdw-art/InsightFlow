@@ -706,6 +706,7 @@ class ResearcherAgent:
             # ✅ 有文档 → 走知识融合逻辑
             logger.info("使用知识融合模式")
             
+            # todo: knowledge_service 改为使用rag模块，prepare_document_knowledge返回rag检索结果，并转换为KnowledgeItem
             # 将文档知识转换为 KnowledgeItem
             doc_items = self.knowledge_service.prepare_document_knowledge(
                 [{'filename': d.get('file_name', ''), 'markdown_content': d.get('content', '')} 
