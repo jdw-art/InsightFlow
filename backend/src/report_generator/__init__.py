@@ -11,3 +11,13 @@ Multi-Agent RAG 行业决策助手，一个基于 Multi-Agent + RAG 的智能行
 - Reviewer: 质量审核
 - Assembler: 文档组装
 """
+
+from .generator import BlogGenerator
+from .services.search_service import SearchService, init_search_service, get_search_service
+
+__all__ = [
+    'BlogGenerator',
+    'SearchService',
+    'init_search_service',
+    'get_search_service',
+]

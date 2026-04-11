@@ -1,6 +1,6 @@
 """
 InsightFlow 后端配置文件
-行业分析报告生成系统
+技术科普绘本生成器
 """
 import os
 from datetime import timedelta
@@ -13,64 +13,78 @@ PROJECT_ROOT = os.path.dirname(BASE_DIR)
 
 class Config:
     """基础配置"""
-
     # Flask 配置
-    SECRET_KEY = os.getenv('SECRET_KEY', 'insightflow-secret-key')
-
+    SECRET_KEY = os.getenv('SECRET_KEY', 'banana-blog-secret-key')
+    
     # 文件存储配置
     UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
     OUTPUT_FOLDER = os.path.join(BASE_DIR, 'outputs')
-    DATA_FOLDER = os.path.join(BASE_DIR, 'data')
-    CACHE_FOLDER = os.path.join(BASE_DIR, 'cache')
     MAX_CONTENT_LENGTH = 50 * 1024 * 1024  # 50MB
-
+    
     # AI 配置（从 .env 读取）
     AI_PROVIDER_FORMAT = os.getenv('AI_PROVIDER_FORMAT', 'openai')
     TEXT_MODEL = os.getenv('TEXT_MODEL', 'qwen3-max-preview')
-
+    
     # OpenAI 兼容 API（用于文本生成）
     OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
     OPENAI_API_BASE = os.getenv('OPENAI_API_BASE', 'https://dashscope.aliyuncs.com/compatible-mode/v1')
-
+    
     # 日志配置
     LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO').upper()
-
+    
     # CORS 配置
     CORS_ORIGINS = os.getenv('CORS_ORIGINS', '*').split(',')
-
+    
     # Prompt 模板目录
-    PROMPTS_DIR = os.path.join(BASE_DIR, 'infrastructure', 'prompts')
+    PROMPTS_DIR = os.path.join(BASE_DIR, 'services', 'blog_generator', 'templates')
+    
+    # Nano Banana 图片生成 API
+    NANO_BANANA_API_KEY = os.getenv('NANO_BANANA_API_KEY', '')
+    NANO_BANANA_API_BASE = os.getenv('NANO_BANANA_API_BASE', 'https://api.grsai.com')
+    NANO_BANANA_MODEL = os.getenv('NANO_BANANA_MODEL', 'nano-banana-pro')
+    
+    # 智谱 Web Search API
+    ZAI_SEARCH_API_KEY = os.getenv('ZAI_SEARCH_API_KEY', '')
+    ZAI_SEARCH_API_BASE = os.getenv('ZAI_SEARCH_API_BASE', 'https://open.bigmodel.cn/api/paas/v4/web_search')
+    ZAI_SEARCH_ENGINE = os.getenv('ZAI_SEARCH_ENGINE', 'search_pro_quark')
+    ZAI_SEARCH_MAX_RESULTS = int(os.getenv('ZAI_SEARCH_MAX_RESULTS', '5'))
+    ZAI_SEARCH_CONTENT_SIZE = os.getenv('ZAI_SEARCH_CONTENT_SIZE', 'medium')
+    ZAI_SEARCH_RECENCY_FILTER = os.getenv('ZAI_SEARCH_RECENCY_FILTER', 'noLimit')
+    
+    # MinerU PDF 解析 API
+    MINERU_TOKEN = os.getenv('MINERU_TOKEN', '')
+    MINERU_API_BASE = os.getenv('MINERU_API_BASE', 'https://mineru.net')
+    
+    # 知识融合配置
+    KNOWLEDGE_MAX_CONTENT_LENGTH = int(os.getenv('KNOWLEDGE_MAX_CONTENT_LENGTH', '8000'))
+    KNOWLEDGE_MAX_DOC_ITEMS = int(os.getenv('KNOWLEDGE_MAX_DOC_ITEMS', '10'))  # 文档知识最大条目数
+    KNOWLEDGE_CHUNK_SIZE = int(os.getenv('KNOWLEDGE_CHUNK_SIZE', '2000'))  # 知识分块大小（字符）
+    KNOWLEDGE_CHUNK_OVERLAP = int(os.getenv('KNOWLEDGE_CHUNK_OVERLAP', '200'))  # 分块重叠大小
+    
+    # 多模态模型配置（用于图片摘要）
+    IMAGE_CAPTION_MODEL = os.getenv('IMAGE_CAPTION_MODEL', 'qwen3-vl-plus-2025-12-19')
+    
+    # 阿里云 OSS 配置 (用于上传图片获取公网 URL)
+    OSS_ACCESS_KEY_ID = os.getenv('OSS_ACCESS_KEY_ID', '')
+    OSS_ACCESS_KEY_SECRET = os.getenv('OSS_ACCESS_KEY_SECRET', '')
+    OSS_BUCKET_NAME = os.getenv('OSS_BUCKET_NAME', '')
+    OSS_ENDPOINT = os.getenv('OSS_ENDPOINT', 'oss-cn-hangzhou.aliyuncs.com')
+    
+    # Veo3 视频生成配置
+    VEO3_MODEL = os.getenv('VEO3_MODEL', 'veo3.1-fast')
+    VIDEO_OUTPUT_FOLDER = os.getenv('VIDEO_OUTPUT_FOLDER', '')
+    
+    # 小红书 Tab 配置
+    XHS_TAB_ENABLED = os.getenv('XHS_TAB_ENABLED', 'false').lower() == 'true'
 
-    # RAG 配置
-    # 向量数据库
-    VECTOR_DB_TYPE = os.getenv('VECTOR_DB_TYPE', 'faiss')  # faiss | chromadb
-    VECTOR_DB_PATH = os.path.join(DATA_FOLDER, 'vector_db')
-
-    # BM25 索引配置
-    BM25_INDEX_PATH = os.path.join(DATA_FOLDER, 'bm25_index')
-
-    # 文档存储路径
-    DOCUMENTS_PATH = os.path.join(DATA_FOLDER, 'documents')
-
-    # 检索配置
-    RAG_TOP_K = int(os.getenv('RAG_TOP_K', '10'))
-    RAG_RERANK_TOP_K = int(os.getenv('RAG_RERANK_TOP_K', '5'))
-    RAG_CHUNK_SIZE = int(os.getenv('RAG_CHUNK_SIZE', '1000'))
-    RAG_CHUNK_OVERLAP = int(os.getenv('RAG_CHUNK_OVERLAP', '200'))
-
-    # Semantic Cache 配置
-    SEMANTIC_CACHE_ENABLED = os.getenv('SEMANTIC_CACHE_ENABLED', 'true').lower() == 'true'
-    SEMANTIC_CACHE_THRESHOLD = float(os.getenv('SEMANTIC_CACHE_THRESHOLD', '0.85'))
-    SEMANTIC_CACHE_PATH = os.path.join(CACHE_FOLDER, 'semantic_cache')
-
-    # LLM 弹性调用配置
+    # LLM 弹性调用配置（37.32 截断扩容与智能重试）
     LLM_CALL_TIMEOUT = int(os.getenv('LLM_CALL_TIMEOUT', '600'))
     LLM_MAX_RETRIES = int(os.getenv('LLM_MAX_RETRIES', '5'))
     LLM_RETRY_BASE_WAIT = float(os.getenv('LLM_RETRY_BASE_WAIT', '5'))
     LLM_RETRY_MAX_WAIT = float(os.getenv('LLM_RETRY_MAX_WAIT', '60'))
     LLM_TRUNCATION_EXPAND_RATIO = float(os.getenv('LLM_TRUNCATION_EXPAND_RATIO', '1.1'))
 
-    # 上下文长度守卫配置
+    # 上下文长度守卫配置（37.33 上下文动态估算与自动回退）
     CONTEXT_GUARD_ENABLED = os.getenv('CONTEXT_GUARD_ENABLED', 'true').lower() == 'true'
     CONTEXT_SAFETY_MARGIN = float(os.getenv('CONTEXT_SAFETY_MARGIN', '0.85'))
     CONTEXT_ESTIMATION_METHOD = os.getenv('CONTEXT_ESTIMATION_METHOD', 'auto')
@@ -78,42 +92,46 @@ class Config:
     # Token 追踪与成本分析
     TOKEN_TRACKING_ENABLED = os.getenv('TOKEN_TRACKING_ENABLED', 'true').lower() == 'true'
     TOKEN_COST_ESTIMATION = os.getenv('TOKEN_COST_ESTIMATION', 'false').lower() == 'true'
+    # 102.10 迁移：主动式 Token 预算管理
     TOKEN_TOTAL_BUDGET = int(os.getenv('TOKEN_TOTAL_BUDGET', '500000'))
 
     # 结构化任务日志
-    TASK_LOG_ENABLED = os.getenv('TASK_LOG_ENABLED', 'true').lower() == 'true'
-    TASK_LOGS_DIR = os.getenv('TASK_LOGS_DIR', 'logs/tasks')
+    BLOG_TASK_LOG_ENABLED = os.getenv('BLOG_TASK_LOG_ENABLED', 'true').lower() == 'true'
+    BLOG_LOGS_DIR = os.getenv('BLOG_LOGS_DIR', 'logs/blog_tasks')
 
-    # SSE 流式事件配置
+    # SSE 流式事件增量优化（37.34）
     SSE_LLM_EVENTS_ENABLED = os.getenv('SSE_LLM_EVENTS_ENABLED', 'true').lower() == 'true'
     SSE_TOKEN_SUMMARY_ENABLED = os.getenv('SSE_TOKEN_SUMMARY_ENABLED', 'true').lower() == 'true'
 
-    # 统一 ToolManager
+    # 统一 ToolManager（37.09）
     TOOL_BLACKLIST = os.getenv('TOOL_BLACKLIST', '')
     TOOL_DEFAULT_TIMEOUT = int(os.getenv('TOOL_DEFAULT_TIMEOUT', '300'))
 
-    # Web Search 配置
+    # Serper Google 搜索配置（75.02）
     SERPER_API_KEY = os.getenv('SERPER_API_KEY', '')
     SERPER_TIMEOUT = int(os.getenv('SERPER_TIMEOUT', '10'))
     SERPER_MAX_RESULTS = int(os.getenv('SERPER_MAX_RESULTS', '10'))
 
-    # Jina 深度抓取
-    JINA_API_KEY = os.getenv('JINA_API_KEY', '')
-    DEEP_SCRAPE_ENABLED = os.getenv('DEEP_SCRAPE_ENABLED', 'true').lower() == 'true'
-    DEEP_SCRAPE_TOP_N = int(os.getenv('DEEP_SCRAPE_TOP_N', '3'))
-    DEEP_SCRAPE_TIMEOUT = int(os.getenv('DEEP_SCRAPE_TIMEOUT', '30'))
-
-    # 搜狗搜索配置
+    # 搜狗搜索配置（75.07 腾讯云 SearchPro）
     TENCENTCLOUD_SECRET_ID = os.getenv('TENCENTCLOUD_SECRET_ID', '')
     TENCENTCLOUD_SECRET_KEY = os.getenv('TENCENTCLOUD_SECRET_KEY', '')
     SOGOU_SEARCH_TIMEOUT = int(os.getenv('SOGOU_SEARCH_TIMEOUT', '10'))
     SOGOU_MAX_RESULTS = int(os.getenv('SOGOU_MAX_RESULTS', '10'))
 
-    # 多提供商 LLM 客户端工厂
+    # 多提供商 LLM 客户端工厂（37.29）
     DEFAULT_LLM_PROVIDER = os.getenv('DEFAULT_LLM_PROVIDER', 'openai')
     DEFAULT_LLM_MODEL = os.getenv('DEFAULT_LLM_MODEL', '')
 
-    # 三级 LLM 模型策略
+    # 上下文压缩策略（37.06）
+    CONTEXT_COMPRESSION_ENABLED = os.getenv('CONTEXT_COMPRESSION_ENABLED', 'true').lower() == 'true'
+    CONTEXT_SEARCH_MAX_RESULTS = int(os.getenv('CONTEXT_SEARCH_MAX_RESULTS', '10'))
+    CONTEXT_REVISION_KEEP_LAST = int(os.getenv('CONTEXT_REVISION_KEEP_LAST', '2'))
+
+    # 推理引擎 Extended Thinking（37.03）
+    THINKING_ENABLED = os.getenv('THINKING_ENABLED', 'false').lower() == 'true'
+    THINKING_BUDGET_TOKENS = int(os.getenv('THINKING_BUDGET_TOKENS', '19000'))
+
+    # 三级 LLM 模型策略（41.06 迁移）— 留空则退化为 TEXT_MODEL
     LLM_FAST = os.getenv('LLM_FAST', '')
     LLM_SMART = os.getenv('LLM_SMART', '')
     LLM_STRATEGIC = os.getenv('LLM_STRATEGIC', '')
@@ -121,14 +139,18 @@ class Config:
     LLM_SMART_MAX_TOKENS = int(os.getenv('LLM_SMART_MAX_TOKENS', '8192'))
     LLM_STRATEGIC_MAX_TOKENS = int(os.getenv('LLM_STRATEGIC_MAX_TOKENS', '16000'))
 
-    # 推理引擎 Extended Thinking
-    THINKING_ENABLED = os.getenv('THINKING_ENABLED', 'false').lower() == 'true'
-    THINKING_BUDGET_TOKENS = int(os.getenv('THINKING_BUDGET_TOKENS', '19000'))
+    # Jina 深度抓取（75.03）
+    JINA_API_KEY = os.getenv('JINA_API_KEY', '')
+    DEEP_SCRAPE_ENABLED = os.getenv('DEEP_SCRAPE_ENABLED', 'true').lower() == 'true'
+    DEEP_SCRAPE_TOP_N = int(os.getenv('DEEP_SCRAPE_TOP_N', '3'))
+    DEEP_SCRAPE_TIMEOUT = int(os.getenv('DEEP_SCRAPE_TIMEOUT', '30'))
 
-    # 评估配置
-    EVALUATION_ENABLED = os.getenv('EVALUATION_ENABLED', 'true').lower() == 'true'
-    EVALUATION_RECALL_K = int(os.getenv('EVALUATION_RECALL_K', '10'))
-    EVALUATION_RESULTS_DIR = os.path.join(OUTPUT_FOLDER, 'evaluations')
+    # 知识空白检测与多轮搜索（75.04）
+    MULTI_ROUND_SEARCH_ENABLED = os.getenv('MULTI_ROUND_SEARCH_ENABLED', 'true').lower() == 'true'
+
+    # Crawl4AI 主动爬取（75.06）
+    CRAWL4AI_ENABLED = os.getenv('CRAWL4AI_ENABLED', 'false').lower() == 'true'
+    MATERIALS_DIR = os.getenv('MATERIALS_DIR', os.path.join(BASE_DIR, 'materials'))
 
 
 class DevelopmentConfig(Config):
@@ -152,3 +174,123 @@ def get_config():
     """根据环境变量获取配置"""
     env = os.getenv('FLASK_ENV', 'development')
     return config_map.get(env, DevelopmentConfig)
+
+
+# ========== 文章长度配置 ==========
+
+# 文章长度预设配置
+ARTICLE_LENGTH_PRESETS = {
+    'mini': {
+        'sections_count': 4,        # 2-4 个知识点章节
+        'images_count': 5,          # 每章节 1 张配图 + 1 张封面图
+        'code_blocks_count': 0,
+        'target_word_count': 800,
+        'description': '精品短文（2-4个知识点章节）'
+    },
+    'short': {
+        'sections_count': 2,
+        'images_count': 2,
+        'code_blocks_count': 0,
+        'target_word_count': 1500,
+        'description': '短文（2-3个章节）'
+    },
+    'medium': {
+        'sections_count': 4,
+        'images_count': 4,
+        'code_blocks_count': 2,
+        'target_word_count': 3500,
+        'description': '中等长度（4-5个章节）'
+    },
+    'long': {
+        'sections_count': 6,
+        'images_count': 8,
+        'code_blocks_count': 4,
+        'target_word_count': 6000,
+        'description': '长文（6-8个章节）'
+    }
+}
+
+# 自定义模式的验证规则
+CUSTOM_CONFIG_LIMITS = {
+    'sections_count': {'min': 1, 'max': 12},
+    'images_count': {'min': 0, 'max': 20},
+    'code_blocks_count': {'min': 0, 'max': 10},
+    'target_word_count': {'min': 300, 'max': 15000}
+}
+
+
+def get_article_config(target_length: str, custom_config: dict = None) -> dict:
+    """
+    获取文章生成配置
+    
+    Args:
+        target_length: 预设长度 (mini/short/medium/long) 或 'custom'
+        custom_config: 自定义配置（仅当 target_length='custom' 时使用）
+    
+    Returns:
+        {
+            'sections_count': int,
+            'images_count': int,
+            'code_blocks_count': int,
+            'target_word_count': int
+        }
+    """
+    if target_length in ARTICLE_LENGTH_PRESETS:
+        config = ARTICLE_LENGTH_PRESETS[target_length].copy()
+        return {
+            'sections_count': config['sections_count'],
+            'images_count': config['images_count'],
+            'code_blocks_count': config['code_blocks_count'],
+            'target_word_count': config['target_word_count']
+        }
+    elif target_length == 'custom' and custom_config:
+        return validate_custom_config(custom_config)
+    else:
+        # 默认使用 medium
+        config = ARTICLE_LENGTH_PRESETS['medium'].copy()
+        return {
+            'sections_count': config['sections_count'],
+            'images_count': config['images_count'],
+            'code_blocks_count': config['code_blocks_count'],
+            'target_word_count': config['target_word_count']
+        }
+
+
+def validate_custom_config(custom_config: dict) -> dict:
+    """
+    验证并返回自定义配置
+    
+    Args:
+        custom_config: 用户提供的自定义配置
+        
+    Returns:
+        验证后的配置字典
+        
+    Raises:
+        ValueError: 如果配置无效
+    """
+    if not custom_config:
+        raise ValueError("自定义配置不能为空")
+    
+    validated = {}
+    errors = []
+    
+    for key, limits in CUSTOM_CONFIG_LIMITS.items():
+        value = custom_config.get(key)
+        if value is None:
+            # 使用 medium 预设的默认值
+            validated[key] = ARTICLE_LENGTH_PRESETS['medium'][key]
+        else:
+            try:
+                value = int(value)
+                if value < limits['min'] or value > limits['max']:
+                    errors.append(f"{key} 必须在 {limits['min']}-{limits['max']} 之间，当前值: {value}")
+                else:
+                    validated[key] = value
+            except (TypeError, ValueError):
+                errors.append(f"{key} 必须是整数，当前值: {value}")
+    
+    if errors:
+        raise ValueError("; ".join(errors))
+    
+    return validated
