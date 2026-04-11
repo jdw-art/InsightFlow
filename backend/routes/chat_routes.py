@@ -272,15 +272,6 @@ def generate(session_id):
     }), 202
 
 
-@chat_bp.route('/session/<session_id>/publish', methods=['POST'])
-def publish(session_id):
-    session, err, code = _get_session_or_404(session_id)
-    if err:
-        return err, code
-    _session_mgr.update(session_id, status="completed")
-    return jsonify({"status": "completed", "session_id": session_id})
-
-
 @chat_bp.route('/session/<session_id>/preview', methods=['GET'])
 def preview(session_id):
     session, err, code = _get_session_or_404(session_id)

@@ -125,10 +125,6 @@ SETTINGS_SCHEMA = {
         'tab': 'feature', 'type': 'bool', 'label': '封面动画',
         'default': True,
     },
-    'XHS_TAB_ENABLED': {
-        'tab': 'feature', 'type': 'bool', 'label': '小红书 Tab',
-        'default': False,
-    },
     'REVIEWER_ENABLED': {
         'tab': 'feature', 'type': 'bool', 'label': 'Reviewer 页面',
         'default': False,

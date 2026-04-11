@@ -42,7 +42,7 @@ def submit_task():
         return jsonify({'error': '缺少 topic 参数'}), 400
 
     from services.task_queue.models import (
-        BlogTask, BlogGenerationConfig, PublishConfig,
+        BlogTask, BlogGenerationConfig,
         TriggerConfig, TaskPriority,
     )
 
@@ -60,7 +60,6 @@ def submit_task():
         name=data.get('name', f"博客: {data['topic'][:30]}"),
         description=data.get('description'),
         generation=generation,
-        publish=PublishConfig(**data.get('publish', {})),
         priority=priority,
         tags=data.get('tags', []),
         user_id=data.get('user_id'),

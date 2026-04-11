@@ -3,11 +3,9 @@ task_queue 数据模型 — Pydantic v2
 
 核心模型：
 - BlogTask: 博客生成任务（排队/执行/结果）
-- TriggerConfig: 触发配置（手动/Cron/一次性）
+- TriggerConfig: 触发配置（手动）
 - BlogGenerationConfig: 生成参数
-- PublishConfig: 发布配置
 - ExecutionRecord: 执行历史记录
-- SchedulerConfig: 全局调度配置
 """
 import uuid
 from datetime import datetime
@@ -56,14 +54,6 @@ class BlogGenerationConfig(BaseModel):
     custom_word_count: Optional[int] = None
 
 
-class PublishConfig(BaseModel):
-    auto_publish: bool = False
-    platform: Optional[str] = None
-    skip_quality_check: bool = False
-    notify_on_complete: bool = True
-    notify_channel: Optional[str] = None
-
-
 class BlogTask(BaseModel):
     """博客生成任务"""
     id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
@@ -72,7 +62,6 @@ class BlogTask(BaseModel):
 
     trigger: TriggerConfig = Field(default_factory=TriggerConfig)
     generation: BlogGenerationConfig
-    publish: PublishConfig = Field(default_factory=PublishConfig)
 
     status: QueueStatus = QueueStatus.QUEUED
     priority: TaskPriority = TaskPriority.NORMAL
@@ -114,75 +103,3 @@ class ExecutionRecord(BaseModel):
     output_url: Optional[str] = None
     output_summary: Optional[str] = None
     error: Optional[str] = None
-
-    published: bool = False
-    publish_url: Optional[str] = None
-
-
-class SchedulerConfig(BaseModel):
-    """全局调度配置"""
-    max_concurrent_tasks: int = 2
-    default_timeout: int = 1800
-    log_retention_days: int = 30
-    max_execution_history: int = 100
-    default_timezone: str = "Asia/Shanghai"
-
-
-# ── Cron 调度器模型（对应 OpenClaw src/cron/types.ts）──
-
-
-class CronScheduleKind(str, Enum):
-    AT = "at"          # 一次性：指定绝对时间
-    EVERY = "every"    # 固定间隔
-    CRON = "cron"      # cron 表达式
-
-
-class CronJobStatus(str, Enum):
-    OK = "ok"
-    ERROR = "error"
-    SKIPPED = "skipped"
-
-
-class CronSchedule(BaseModel):
-    """调度配置 — 对应 OpenClaw CronSchedule"""
-    kind: CronScheduleKind
-    at: Optional[datetime] = None              # kind="at"
-    every_seconds: Optional[int] = None        # kind="every"
-    anchor_at: Optional[datetime] = None       # kind="every"
-    expr: Optional[str] = None                 # kind="cron"
-    tz: str = "Asia/Shanghai"
-
-
-class CronJobState(BaseModel):
-    """运行时状态 — 对应 OpenClaw CronJobState"""
-    next_run_at: Optional[datetime] = None
-    running_at: Optional[datetime] = None
-    last_run_at: Optional[datetime] = None
-    last_status: Optional[CronJobStatus] = None
-    last_error: Optional[str] = None
-    last_duration_ms: Optional[int] = None
-    consecutive_errors: int = 0
-    schedule_error_count: int = 0
-
-
-class CronJob(BaseModel):
-    """定时任务 — 对应 OpenClaw CronJob"""
-    id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
-    name: str
-    description: Optional[str] = None
-    enabled: bool = True
-    delete_after_run: bool = False
-
-    schedule: CronSchedule
-    generation: BlogGenerationConfig
-    publish: PublishConfig = Field(default_factory=PublishConfig)
-
-    timeout_seconds: int = 600
-
-    state: CronJobState = Field(default_factory=CronJobState)
-
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
-
-    tags: list[str] = Field(default_factory=list)
-    user_id: Optional[str] = None

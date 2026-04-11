@@ -1,6 +1,6 @@
 """
 静态文件和页面路由
-/, /xhs.html, /reviewer, /outputs/*, /api/config, /api-docs
+/, /reviewer, /outputs/*, /api/config, /api-docs
 """
 import os
 import logging
@@ -21,11 +21,6 @@ _outputs_folder = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'outp
 @static_bp.route('/')
 def index():
     return send_from_directory(_static_folder, 'index.html')
-
-
-@static_bp.route('/xhs.html')
-def xhs_page():
-    return send_from_directory(_static_folder, 'xhs.html')
 
 
 @static_bp.route('/reviewer')
@@ -134,7 +129,6 @@ def get_frontend_config():
         'config': {
             'features': {
                 'reviewer': os.environ.get('REVIEWER_ENABLED', 'false').lower() == 'true',
-                'xhs_tab': os.environ.get('XHS_TAB_ENABLED', 'false').lower() == 'true',
             },
             'reviewer_enabled': os.environ.get('REVIEWER_ENABLED', 'false').lower() == 'true',
         }

@@ -70,9 +70,6 @@ class Config:
     OSS_BUCKET_NAME = os.getenv('OSS_BUCKET_NAME', '')
     OSS_ENDPOINT = os.getenv('OSS_ENDPOINT', 'oss-cn-hangzhou.aliyuncs.com')
 
-    # 小红书 Tab 配置
-    XHS_TAB_ENABLED = os.getenv('XHS_TAB_ENABLED', 'false').lower() == 'true'
-
     # LLM 弹性调用配置（37.32 截断扩容与智能重试）
     LLM_CALL_TIMEOUT = int(os.getenv('LLM_CALL_TIMEOUT', '600'))
     LLM_MAX_RETRIES = int(os.getenv('LLM_MAX_RETRIES', '5'))
