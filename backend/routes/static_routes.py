@@ -3,7 +3,6 @@
 /, /xhs.html, /reviewer, /outputs/*, /api/config, /api-docs
 """
 import os
-import re
 import logging
 
 from flask import Blueprint, Response, jsonify, request, send_from_directory
@@ -44,43 +43,7 @@ def book_reader_home():
 @static_bp.route('/_sidebar.md')
 @static_bp.route('/static/_sidebar.md')
 def book_reader_sidebar():
-    book_id = request.args.get('book_id')
-    referrer = request.referrer
-    logger.info(f"_sidebar.md 请求: book_id={book_id}, referrer={referrer}")
-    if not book_id and referrer:
-        match = re.search(r'[?&]id=([^&#]+)', referrer)
-        if match:
-            book_id = match.group(1)
-            logger.info(f"从 Referer 提取到 book_id: {book_id}")
-    if book_id and book_id.endswith('.md'):
-        book_id = book_id[:-3]
-    if book_id:
-        try:
-            db_service = get_db_service()
-            book = db_service.get_book(book_id)
-            if book:
-                chapters = db_service.get_book_chapters(book_id)
-                md = f"- [**第 0 章 导读**](/)\n"
-
-                chapter_groups = {}
-                for chapter in chapters:
-                    idx = chapter.get('chapter_index', 0)
-                    title = chapter.get('chapter_title', '未分类')
-                    if idx not in chapter_groups:
-                        chapter_groups[idx] = {'title': title, 'sections': []}
-                    chapter_groups[idx]['sections'].append(chapter)
-
-                for idx in sorted(chapter_groups.keys()):
-                    group = chapter_groups[idx]
-                    md += f"- **第 {idx} 章 {group['title']}**\n"
-                    for section in group['sections']:
-                        chapter_id = section.get('id', '')
-                        section_title = section.get('section_title', '')
-                        md += f"  - [{section_title}](/chapter/{chapter_id})\n"
-
-                return Response(md, mimetype='text/markdown')
-        except Exception as e:
-            logger.error(f"生成侧边栏失败: {e}")
+    """返回默认侧边栏（书籍功能已移除）"""
     return Response('- [首页](/)', mimetype='text/markdown')
 
 
@@ -171,10 +134,8 @@ def get_frontend_config():
         'config': {
             'features': {
                 'reviewer': os.environ.get('REVIEWER_ENABLED', 'false').lower() == 'true',
-                'book_scan': os.environ.get('BOOK_SCAN_ENABLED', 'false').lower() == 'true',
                 'xhs_tab': os.environ.get('XHS_TAB_ENABLED', 'false').lower() == 'true',
             },
             'reviewer_enabled': os.environ.get('REVIEWER_ENABLED', 'false').lower() == 'true',
-            'book_scan_enabled': os.environ.get('BOOK_SCAN_ENABLED', 'false').lower() == 'true'
         }
     })

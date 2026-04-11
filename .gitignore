@@ -115,3 +115,5 @@ backend/outputs/
 deploy.sh
 remote_deploy.sh
 deploy_only.sh
+
+./node_modules
