@@ -276,8 +276,6 @@ def generate_blog():
         source_material = data.get('source_material', None)
         document_ids = data.get('document_ids', [])
         image_style = data.get('image_style', '')
-        generate_cover_video = data.get('generate_cover_video', False)
-        video_aspect_ratio = data.get('video_aspect_ratio', '16:9')
         custom_config = data.get('custom_config', None)
         deep_thinking = data.get('deep_thinking', False)
         background_investigation = data.get('background_investigation', True)
@@ -292,7 +290,7 @@ def generate_blog():
             except ValueError as e:
                 return jsonify({'success': False, 'error': f'自定义配置验证失败: {str(e)}'}), 400
 
-        logger.info(f"📝 博客生成请求: topic={topic}, article_type={article_type}, target_audience={target_audience}, audience_adaptation={audience_adaptation}, target_length={target_length}, document_ids={document_ids}, image_style={image_style}, generate_cover_video={generate_cover_video}, video_aspect_ratio={video_aspect_ratio}, custom_config={custom_config}")
+        logger.info(f"📝 博客生成请求: topic={topic}, article_type={article_type}, target_audience={target_audience}, audience_adaptation={audience_adaptation}, target_length={target_length}, document_ids={document_ids}, image_style={image_style}, custom_config={custom_config}")
 
         blog_service = get_blog_service()
         if not blog_service:
@@ -331,8 +329,6 @@ def generate_blog():
             document_ids=document_ids,
             document_knowledge=document_knowledge,
             image_style=image_style,
-            generate_cover_video=generate_cover_video,
-            video_aspect_ratio=video_aspect_ratio,
             custom_config=custom_config,
             deep_thinking=deep_thinking,
             background_investigation=background_investigation,
@@ -369,10 +365,8 @@ def generate_blog_mini():
         article_type = data.get('article_type', 'tutorial')
         audience_adaptation = data.get('audience_adaptation', 'default')
         image_style = data.get('image_style', '')
-        generate_cover_video = data.get('generate_cover_video', False)
-        video_aspect_ratio = data.get('video_aspect_ratio', '16:9')
 
-        logger.info(f"📝 Mini 博客生成请求: topic={topic}, article_type={article_type}, audience_adaptation={audience_adaptation}, image_style={image_style}, generate_cover_video={generate_cover_video}, video_aspect_ratio={video_aspect_ratio}")
+        logger.info(f"📝 Mini 博客生成请求: topic={topic}, article_type={article_type}, audience_adaptation={audience_adaptation}, image_style={image_style}")
 
         blog_service = get_blog_service()
         if not blog_service:
@@ -394,8 +388,6 @@ def generate_blog_mini():
             document_ids=[],
             document_knowledge=[],
             image_style=image_style,
-            generate_cover_video=generate_cover_video,
-            video_aspect_ratio=video_aspect_ratio,
             custom_config=None,
             task_manager=task_manager,
             app=current_app._get_current_object()

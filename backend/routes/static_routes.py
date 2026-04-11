@@ -105,12 +105,6 @@ def serve_output_cover(filename):
     return send_from_directory(covers_folder, filename)
 
 
-@static_bp.route('/outputs/videos/<path:filename>')
-def serve_output_video(filename):
-    videos_folder = os.path.join(_outputs_folder, 'videos')
-    return send_from_directory(videos_folder, filename)
-
-
 @static_bp.route('/api-docs')
 def api_docs():
     html = '''<!DOCTYPE html>
@@ -178,7 +172,6 @@ def get_frontend_config():
             'features': {
                 'reviewer': os.environ.get('REVIEWER_ENABLED', 'false').lower() == 'true',
                 'book_scan': os.environ.get('BOOK_SCAN_ENABLED', 'false').lower() == 'true',
-                'cover_video': os.environ.get('COVER_VIDEO_ENABLED', 'true').lower() == 'true',
                 'xhs_tab': os.environ.get('XHS_TAB_ENABLED', 'false').lower() == 'true',
             },
             'reviewer_enabled': os.environ.get('REVIEWER_ENABLED', 'false').lower() == 'true',

@@ -1,6 +1,6 @@
 """
 历史记录和导出路由
-/api/history, /api/export/markdown, /api/video/generate
+/api/history, /api/export/markdown
 """
 import os
 import io
@@ -13,7 +13,6 @@ from flask import Blueprint, Response, jsonify, request
 from urllib.parse import urlparse
 
 from services.database_service import get_db_service
-from services.video_service import get_video_service
 from services.oss_service import get_oss_service
 
 logger = logging.getLogger(__name__)
@@ -81,85 +80,6 @@ def delete_history(history_id):
             return jsonify({'success': False, 'error': '记录不存在'}), 404
     except Exception as e:
         logger.error(f"删除历史记录失败: {e}", exc_info=True)
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
-@history_bp.route('/api/video/generate', methods=['POST'])
-def generate_video():
-    """生成封面动画视频"""
-    try:
-        data = request.get_json()
-
-        if not data:
-            return jsonify({'success': False, 'error': '请提供 JSON 数据'}), 400
-
-        history_id = data.get('history_id')
-        image_url = data.get('image_url')
-        image_path = data.get('image_path')
-        prompt = data.get('prompt')
-
-        video_service = get_video_service()
-        if not video_service or not video_service.is_available():
-            return jsonify({'success': False, 'error': '视频生成服务不可用'}), 503
-
-        if not image_url:
-            if not image_path:
-                if history_id:
-                    db_service = get_db_service()
-                    record = db_service.get_history(history_id)
-                    if record and record.get('cover_image'):
-                        image_path = record.get('cover_image')
-
-            if not image_path:
-                return jsonify({'success': False, 'error': '缺少 image_url 或 image_path 参数'}), 400
-
-            oss_service = get_oss_service()
-            if not oss_service or not oss_service.is_available:
-                return jsonify({'success': False, 'error': 'OSS 服务不可用，无法上传图片'}), 503
-
-            import uuid
-            unique_id = uuid.uuid4().hex[:8]
-            filename = os.path.basename(image_path)
-            remote_path = f"vibe-blog/covers/{unique_id}_{filename}"
-
-            oss_result = oss_service.upload_file(
-                local_path=image_path,
-                remote_path=remote_path
-            )
-
-            if not oss_result.get('success'):
-                return jsonify({'success': False, 'error': f"图片上传失败: {oss_result.get('error')}"}), 500
-
-            image_url = oss_result['url']
-            logger.info(f"封面图已上传到 OSS: {image_url}")
-
-        logger.info(f"开始生成封面动画: history_id={history_id}, image_url={image_url[:80]}...")
-
-        result = video_service.generate_from_image(
-            image_url=image_url,
-            prompt=prompt
-        )
-
-        if not result:
-            return jsonify({'success': False, 'error': '视频生成失败'}), 500
-
-        video_filename = os.path.basename(result.local_path) if result.local_path else None
-        video_access_url = f"/outputs/videos/{video_filename}" if video_filename else result.url
-
-        if history_id:
-            db_service = get_db_service()
-            db_service.update_history_video(history_id, video_access_url)
-
-        logger.info(f"封面动画生成成功: {video_access_url}")
-
-        return jsonify({
-            'success': True,
-            'video_url': video_access_url,
-            'task_id': result.task_id
-        })
-
-    except Exception as e:
-        logger.error(f"视频生成失败: {e}", exc_info=True)
         return jsonify({'success': False, 'error': str(e)}), 500
 
 

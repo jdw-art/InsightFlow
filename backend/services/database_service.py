@@ -119,7 +119,6 @@ class DatabaseService:
                     images_count INTEGER DEFAULT 0,
                     review_score INTEGER DEFAULT 0,
                     cover_image TEXT,
-                    cover_video TEXT,
                     target_sections_count INTEGER,
                     target_images_count INTEGER,
                     target_code_blocks_count INTEGER,
@@ -574,7 +573,6 @@ class DatabaseService:
         images_count: int = 0,
         review_score: int = 0,
         cover_image: str = None,
-        cover_video: str = None,
         target_sections_count: int = None,
         target_images_count: int = None,
         target_code_blocks_count: int = None,
@@ -584,14 +582,14 @@ class DatabaseService:
         """保存历史记录"""
         with self.get_connection() as conn:
             conn.execute('''
-                INSERT INTO history_records 
-                (id, topic, article_type, target_length, markdown_content, outline, 
-                 sections_count, code_blocks_count, images_count, review_score, cover_image, cover_video,
+                INSERT INTO history_records
+                (id, topic, article_type, target_length, markdown_content, outline,
+                 sections_count, code_blocks_count, images_count, review_score, cover_image,
                  target_sections_count, target_images_count, target_code_blocks_count, target_word_count, citations)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 history_id, topic, article_type, target_length, markdown_content, outline,
-                sections_count, code_blocks_count, images_count, review_score, cover_image, cover_video,
+                sections_count, code_blocks_count, images_count, review_score, cover_image,
                 target_sections_count, target_images_count, target_code_blocks_count, target_word_count, citations
             ))
         
@@ -614,8 +612,8 @@ class DatabaseService:
         """列出历史记录（按时间倒序，支持分页，包含归属书籍信息）"""
         with self.get_connection() as conn:
             cursor = conn.execute(
-                '''SELECT hr.id, hr.topic, hr.article_type, hr.target_length, hr.sections_count, 
-                   hr.code_blocks_count, hr.images_count, hr.review_score, hr.cover_image, hr.cover_video,
+                '''SELECT hr.id, hr.topic, hr.article_type, hr.target_length, hr.sections_count,
+                   hr.code_blocks_count, hr.images_count, hr.review_score, hr.cover_image,
                    hr.target_sections_count, hr.target_images_count, hr.target_code_blocks_count, hr.target_word_count,
                    hr.created_at,
                    b.id as book_id,
@@ -633,21 +631,7 @@ class DatabaseService:
         with self.get_connection() as conn:
             cursor = conn.execute('SELECT COUNT(*) FROM history_records')
             return cursor.fetchone()[0]
-    
-    def update_history_video(self, history_id: str, cover_video: str) -> bool:
-        """更新历史记录的封面动画"""
-        with self.get_connection() as conn:
-            cursor = conn.execute('''
-                UPDATE history_records 
-                SET cover_video = ?
-                WHERE id = ?
-            ''', (cover_video, history_id))
-            updated = cursor.rowcount > 0
-        
-        if updated:
-            logger.info(f"更新历史记录封面动画: {history_id}")
-        return updated
-    
+
     def delete_history(self, history_id: str) -> bool:
         """删除历史记录"""
         with self.get_connection() as conn:
@@ -683,8 +667,8 @@ class DatabaseService:
         with self.get_connection() as conn:
             if content_type and content_type != 'all':
                 cursor = conn.execute(
-                    '''SELECT hr.id, hr.topic, hr.article_type, hr.target_length, hr.sections_count, 
-                       hr.code_blocks_count, hr.images_count, hr.review_score, hr.cover_image, hr.cover_video,
+                    '''SELECT hr.id, hr.topic, hr.article_type, hr.target_length, hr.sections_count,
+                       hr.code_blocks_count, hr.images_count, hr.review_score, hr.cover_image,
                        hr.target_sections_count, hr.target_images_count, hr.target_code_blocks_count, hr.target_word_count,
                        hr.created_at, hr.content_type, hr.source_id, hr.derived_ids,
                        hr.xhs_style, hr.xhs_image_urls, hr.xhs_copy_text, hr.xhs_hashtags, hr.xhs_publish_url,
@@ -700,8 +684,8 @@ class DatabaseService:
                 )
             else:
                 cursor = conn.execute(
-                    '''SELECT hr.id, hr.topic, hr.article_type, hr.target_length, hr.sections_count, 
-                       hr.code_blocks_count, hr.images_count, hr.review_score, hr.cover_image, hr.cover_video,
+                    '''SELECT hr.id, hr.topic, hr.article_type, hr.target_length, hr.sections_count,
+                       hr.code_blocks_count, hr.images_count, hr.review_score, hr.cover_image,
                        hr.target_sections_count, hr.target_images_count, hr.target_code_blocks_count, hr.target_word_count,
                        hr.created_at, hr.content_type, hr.source_id, hr.derived_ids,
                        hr.xhs_style, hr.xhs_image_urls, hr.xhs_copy_text, hr.xhs_hashtags, hr.xhs_publish_url,
@@ -747,12 +731,11 @@ class DatabaseService:
         copy_text: str = "",
         hashtags: list = None,
         cover_image: str = None,
-        cover_video: str = None,
         source_id: str = None
     ) -> Dict[str, Any]:
         """
         保存小红书记录
-        
+
         Args:
             history_id: 记录ID
             topic: 主题
@@ -762,26 +745,25 @@ class DatabaseService:
             copy_text: 小红书文案
             hashtags: 话题标签列表
             cover_image: 封面图
-            cover_video: 封面视频
             source_id: 来源博客ID（如果是从博客转换的）
-        
+
         Returns:
             创建的记录
         """
         import json
         with self.get_connection() as conn:
             conn.execute('''
-                INSERT INTO history_records 
-                (id, topic, content_type, xhs_style, xhs_layout_type, 
-                 xhs_image_urls, xhs_copy_text, xhs_hashtags, 
-                 cover_image, cover_video, source_id, images_count)
-                VALUES (?, ?, 'xhs', ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO history_records
+                (id, topic, content_type, xhs_style, xhs_layout_type,
+                 xhs_image_urls, xhs_copy_text, xhs_hashtags,
+                 cover_image, source_id, images_count)
+                VALUES (?, ?, 'xhs', ?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 history_id, topic, style, layout_type,
                 json.dumps(image_urls or [], ensure_ascii=False),
                 copy_text,
                 json.dumps(hashtags or [], ensure_ascii=False),
-                cover_image, cover_video, source_id,
+                cover_image, source_id,
                 len(image_urls or [])
             ))
         

@@ -69,11 +69,7 @@ class Config:
     OSS_ACCESS_KEY_SECRET = os.getenv('OSS_ACCESS_KEY_SECRET', '')
     OSS_BUCKET_NAME = os.getenv('OSS_BUCKET_NAME', '')
     OSS_ENDPOINT = os.getenv('OSS_ENDPOINT', 'oss-cn-hangzhou.aliyuncs.com')
-    
-    # Veo3 视频生成配置
-    VEO3_MODEL = os.getenv('VEO3_MODEL', 'veo3.1-fast')
-    VIDEO_OUTPUT_FOLDER = os.getenv('VIDEO_OUTPUT_FOLDER', '')
-    
+
     # 小红书 Tab 配置
     XHS_TAB_ENABLED = os.getenv('XHS_TAB_ENABLED', 'false').lower() == 'true'
 

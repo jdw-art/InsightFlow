@@ -18,7 +18,6 @@ from services import (
 )
 from services.database_service import get_db_service
 from services.oss_service import get_oss_service
-from services.video_service import get_video_service
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +37,6 @@ def xhs_generate():
         count = data.get('count', 4)
         style = data.get('style', 'hand_drawn')
         content = data.get('content')
-        generate_video = data.get('generate_video', True)
 
         task_id = f"xhs_{uuid.uuid4().hex[:12]}"
 
@@ -50,7 +48,6 @@ def xhs_generate():
         xhs_service = XHSService(
             llm_client=get_llm_service(),
             image_service=get_image_service(),
-            video_service=get_video_service(),
             oss_service=None
         )
 
@@ -60,7 +57,6 @@ def xhs_generate():
             count=count,
             style=style,
             content=content,
-            generate_video=generate_video,
             task_manager=task_manager,
             app=current_app._get_current_object()
         )
@@ -155,65 +151,6 @@ def cancel_xhs_task(task_id: str):
         }), 400
 
 
-@xhs_bp.route('/api/xhs/explanation-video', methods=['POST'])
-def xhs_explanation_video():
-    """从图片序列生成讲解视频"""
-    try:
-        data = request.get_json()
-        images = data.get('images', [])
-        scripts = data.get('scripts', [])
-
-        if not images:
-            return jsonify({'success': False, 'error': '请提供图片列表'}), 400
-
-        if len(images) != len(scripts):
-            return jsonify({'success': False, 'error': '图片数量与文案数量不匹配'}), 400
-
-        style = data.get('style', 'ghibli_summer')
-        target_duration = data.get('target_duration', 60.0)
-        bgm_url = data.get('bgm_url')
-        video_model = data.get('video_model', 'veo3')
-
-        from services.xhs_service import XHSService
-        xhs_service = XHSService(
-            llm_client=get_llm_service(),
-            image_service=get_image_service(),
-            video_service=get_video_service(),
-            oss_service=get_oss_service()
-        )
-
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        try:
-            video_url = loop.run_until_complete(xhs_service.generate_explanation_video(
-                images=images,
-                scripts=scripts,
-                style=style,
-                target_duration=target_duration,
-                bgm_url=bgm_url,
-                video_model=video_model
-            ))
-        finally:
-            loop.close()
-
-        if video_url:
-            return jsonify({
-                'success': True,
-                'video_url': video_url,
-                'video_model': video_model,
-                'message': '讲解视频生成成功'
-            })
-        else:
-            return jsonify({
-                'success': False,
-                'error': '视频生成失败'
-            }), 500
-
-    except Exception as e:
-        logger.error(f"讲解视频生成失败: {e}", exc_info=True)
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
 @xhs_bp.route('/api/xhs/outline', methods=['POST'])
 def xhs_outline():
     """仅生成小红书大纲（不生成图片）"""
@@ -232,7 +169,6 @@ def xhs_outline():
         xhs_service = XHSService(
             llm_client=get_llm_service(),
             image_service=None,
-            video_service=None,
             oss_service=None
         )
 

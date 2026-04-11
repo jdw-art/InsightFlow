@@ -416,10 +416,6 @@ class PromptManager:
             article_summary=article_summary
         )
 
-    def render_cover_video_prompt(self) -> str:
-        """渲染封面视频动画 Prompt"""
-        return self.render('blog/cover_video_prompt')
-
     def render_search_summarizer(
         self,
         gaps: list,

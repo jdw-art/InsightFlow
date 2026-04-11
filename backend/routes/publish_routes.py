@@ -11,7 +11,6 @@ from flask import Blueprint, Response, jsonify, request
 
 from services import get_llm_service, get_image_service
 from services.database_service import get_db_service
-from services.video_service import get_video_service
 from services.publishers import Publisher
 
 logger = logging.getLogger(__name__)
@@ -200,7 +199,6 @@ def convert_blog_to_xhs(history_id):
         data = request.get_json() or {}
         style = data.get('style', 'hand_drawn')
         count = data.get('count', 4)
-        generate_video = data.get('generate_video', True)
 
         db_service = get_db_service()
         blog_record = db_service.get_history(history_id)
@@ -232,8 +230,7 @@ def convert_blog_to_xhs(history_id):
                 topic=topic,
                 count=count,
                 style=style,
-                content=reference_content,
-                generate_video=generate_video
+                content=reference_content
             ))
         finally:
             loop.close()
@@ -249,7 +246,6 @@ def convert_blog_to_xhs(history_id):
             copy_text=result.copywriting,
             hashtags=result.tags,
             cover_image=result.image_urls[0] if result.image_urls else None,
-            cover_video=result.video_url,
             source_id=history_id
         )
 
@@ -261,7 +257,6 @@ def convert_blog_to_xhs(history_id):
                 'xhs_id': xhs_id,
                 'source_id': history_id,
                 'image_urls': result.image_urls,
-                'video_url': result.video_url,
                 'titles': result.titles,
                 'copywriting': result.copywriting,
                 'tags': result.tags
@@ -342,7 +337,6 @@ def sync_publish():
                 try:
                     style = xhs_options.get('style', 'hand_drawn')
                     count = xhs_options.get('count', 4)
-                    generate_video = xhs_options.get('generate_video', True)
 
                     loop = asyncio.new_event_loop()
                     asyncio.set_event_loop(loop)
@@ -351,8 +345,7 @@ def sync_publish():
                             topic=record.get('topic', ''),
                             count=count,
                             style=style,
-                            content=record.get('outline', '') or record.get('markdown_content', '')[:2000],
-                            generate_video=generate_video
+                            content=record.get('outline', '') or record.get('markdown_content', '')[:2000]
                         ))
                     finally:
                         loop.close()
@@ -366,7 +359,6 @@ def sync_publish():
                         copy_text=xhs_result.copywriting,
                         hashtags=xhs_result.tags,
                         cover_image=xhs_result.image_urls[0] if xhs_result.image_urls else None,
-                        cover_video=xhs_result.video_url,
                         source_id=record_id
                     )
 
@@ -374,7 +366,6 @@ def sync_publish():
                         'success': True,
                         'xhs_id': xhs_id,
                         'image_urls': xhs_result.image_urls,
-                        'video_url': xhs_result.video_url,
                         'titles': xhs_result.titles,
                         'copywriting': xhs_result.copywriting,
                         'tags': xhs_result.tags

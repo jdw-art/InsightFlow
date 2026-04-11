@@ -50,7 +50,6 @@ from services.database_service import get_db_service, init_db_service
 from services.file_parser_service import get_file_parser, init_file_parser
 from services.knowledge_service import init_knowledge_service
 from services.oss_service import get_oss_service, init_oss_service
-from services.video_service import get_video_service, init_video_service
 
 # 初始化日志
 setup_logging()
@@ -94,19 +93,7 @@ def create_app(config_class=None):
     if oss_service and oss_service.is_available:
         logger.info("OSS 服务已初始化")
     else:
-        logger.warning("OSS 服务不可用，封面动画功能将受限")
-
-    # 初始化视频生成服务
-    try:
-        os.makedirs(os.path.join(app.config.get('OUTPUT_FOLDER', 'outputs'), 'videos'), exist_ok=True)
-    except (OSError, IOError):
-        pass
-    init_video_service(app.config)
-    video_service = get_video_service()
-    if video_service and video_service.is_available():
-        logger.info("统一视频生成服务已初始化 (Veo3 + Sora2)")
-    else:
-        logger.warning("视频生成服务不可用")
+        logger.warning("OSS 服务不可用")
 
     # 初始化知识源相关服务
     init_db_service()

@@ -50,7 +50,6 @@ class BlogGenerationConfig(BaseModel):
     article_type: str = "tutorial"
     target_length: str = "medium"
     image_style: Optional[str] = None
-    generate_cover_video: bool = False
     custom_sections: Optional[int] = None
     custom_images: Optional[int] = None
     custom_code_blocks: Optional[int] = None

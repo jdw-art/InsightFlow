@@ -4,7 +4,6 @@
 复用现有服务：
 - PromptManager: 模板渲染
 - NanoBananaService: 图片生成
-- VideoService: 动画生成
 - OSSService: 文件上传
 - LLMService: 文本生成
 """
@@ -35,7 +34,6 @@ class XHSGenerateResult:
     style: str
     pages: List[XHSPage] = field(default_factory=list)
     image_urls: List[str] = field(default_factory=list)
-    video_url: Optional[str] = None
     titles: List[str] = field(default_factory=list)
     copywriting: str = ""
     tags: List[str] = field(default_factory=list)
@@ -50,21 +48,18 @@ class XHSService:
         self,
         llm_client,
         image_service=None,
-        video_service=None,
         oss_service=None
     ):
         """
         初始化小红书服务
-        
+
         Args:
             llm_client: LLM 客户端
             image_service: 图片生成服务（NanoBananaService）
-            video_service: 视频生成服务
             oss_service: OSS 服务
         """
         self.llm = llm_client
         self.image_service = image_service
-        self.video_service = video_service
         self.oss_service = oss_service
         
         # 导入 PromptManager
@@ -87,21 +82,19 @@ class XHSService:
         count: int = 4,
         style: str = "hand_drawn",
         content: str = None,
-        generate_video: bool = True,
         layouts: List[str] = None
     ) -> XHSGenerateResult:
         """
         生成完整的小红书系列
-        
+
         Args:
             topic: 主题
             count: 页面数量（包括封面）
             style: 风格（hand_drawn/claymation/ghibli_summer）
             content: 参考内容（可选）
-            generate_video: 是否生成动画封面
             layouts: 可选，为每页指定布局，如 ['单页大图', '标准网格', '标准网格', '单页大图']
                      如果不指定，则自动选择
-            
+
         Returns:
             XHSGenerateResult
         """
@@ -149,22 +142,15 @@ class XHSService:
         # 分离结果：前 N 个是图片，最后一个是文案
         image_urls = [url for url in all_results[:-1] if url]
         content_result = all_results[-1]
-        
+
         logger.info(f"并行生成完成: {len(image_urls)} 张图片")
-        
-        # Step 3: 生成动画封面（需要封面图完成后）
-        video_url = None
-        if generate_video and image_urls:
-            logger.info("Step 3: 生成动画封面...")
-            video_url = await self._generate_video(image_urls[0])
-        
+
         result.image_urls = image_urls
-        result.video_url = video_url
         result.titles = content_result.get('titles', [])
         result.copywriting = content_result.get('copywriting', '')
         result.tags = content_result.get('tags', [])
-        
-        logger.info(f"小红书系列生成完成: {len(result.image_urls)} 张图片, 视频={result.video_url is not None}")
+
+        logger.info(f"小红书系列生成完成: {len(result.image_urls)} 张图片")
         return result
     
     async def _generate_outline(
@@ -542,34 +528,7 @@ class XHSService:
         elif result and result.url:
             return result.url
         return None
-    
-    async def _generate_video(self, cover_image_url: str) -> Optional[str]:
-        """生成动画封面"""
-        if not self.video_service:
-            logger.warning("视频服务未配置，跳过动画生成")
-            return None
-        
-        try:
-            # 使用现有的封面视频生成 Prompt
-            video_prompt = self.prompt_manager.render_cover_video_prompt()
-            
-            # 调用视频服务（同步方法，在线程中执行）
-            loop = asyncio.get_event_loop()
-            result = await loop.run_in_executor(
-                None,
-                lambda: self.video_service.generate_from_image(
-                    image_url=cover_image_url,
-                    prompt=video_prompt
-                )
-            )
-            
-            video_url = result.oss_url if result and result.oss_url else (result.url if result else None)
-            
-            return video_url
-        except Exception as e:
-            logger.error(f"动画生成失败: {e}")
-            return None
-    
+
     async def _generate_content(self, topic: str, outline: str) -> Dict[str, Any]:
         """生成小红书文案（并行化版本）"""
         prompt = self.prompt_manager.render_xhs_content(
@@ -630,21 +589,19 @@ class XHSService:
         count: int = 4,
         style: str = "hand_drawn",
         content: str = None,
-        generate_video: bool = True,
         layouts: List[str] = None,
         task_manager=None,
         app=None
     ):
         """
         异步生成小红书系列（在后台线程执行，通过 SSE 推送进度）
-        
+
         Args:
             task_id: 任务 ID
             topic: 主题
             count: 页面数量
             style: 风格
             content: 参考内容
-            generate_video: 是否生成动画封面
             layouts: 布局列表
             task_manager: 任务管理器（用于 SSE 推送）
             app: Flask 应用实例
@@ -659,7 +616,6 @@ class XHSService:
                             count=count,
                             style=style,
                             content=content,
-                            generate_video=generate_video,
                             layouts=layouts,
                             task_manager=task_manager
                         ))
@@ -670,7 +626,6 @@ class XHSService:
                         count=count,
                         style=style,
                         content=content,
-                        generate_video=generate_video,
                         layouts=layouts,
                         task_manager=task_manager
                     ))
@@ -681,7 +636,7 @@ class XHSService:
                         'message': str(e),
                         'recoverable': False
                     })
-        
+
         thread = threading.Thread(target=run_in_thread, daemon=True)
         thread.start()
         logger.info(f"小红书生成任务已启动: {task_id}")
@@ -693,15 +648,14 @@ class XHSService:
         count: int,
         style: str,
         content: str,
-        generate_video: bool,
         layouts: List[str],
         task_manager
     ):
         """
         带 SSE 推送的生成流程
-        
-        流程顺序: 搜索 → 大纲 → 文案 → 分镜 → 图片 → 视频
-        
+
+        流程顺序: 搜索 → 大纲 → 文案 → 分镜 → 图片
+
         事件类型:
         - progress: 进度更新 {stage, progress, message, sub_progress?, detail?}
         - search: 搜索完成 {results_count, sources}
@@ -710,7 +664,6 @@ class XHSService:
         - storyboard: 分镜设计完成 {prompts}
         - image: 单张图片生成完成 {index, url, page_type, progress?}
         - image_progress: 图片生成进度 {index, progress, status}
-        - video: 动画封面生成完成 {url}
         - complete: 全部完成
         - error: 发生错误
         - cancelled: 任务取消
@@ -971,38 +924,7 @@ class XHSService:
                 'progress': 87,
                 'message': f'图片生成完成，共 {len(result.image_urls)} 张'
             })
-            
-            # ========== Step 6: 生成动画封面 ==========
-            video_url = None
-            if generate_video and result.image_urls:
-                if is_cancelled():
-                    send_event('cancelled', {'message': '任务已被用户取消'})
-                    return
-                
-                send_event('progress', {
-                    'stage': 'video',
-                    'progress': 88,
-                    'message': '正在生成动画封面...'
-                })
-                
-                video_url = await self._generate_video(result.image_urls[0])
-                result.video_url = video_url
-                
-                if video_url:
-                    send_event('video', {'url': video_url})
-                
-                send_event('progress', {
-                    'stage': 'video',
-                    'progress': 98,
-                    'message': '动画封面生成完成'
-                })
-            else:
-                send_event('progress', {
-                    'stage': 'video',
-                    'progress': 98,
-                    'message': '跳过视频生成'
-                })
-            
+
             # ========== 保存结果 ==========
             try:
                 from services.database_service import get_db_service
@@ -1015,8 +937,7 @@ class XHSService:
                         image_urls=result.image_urls,
                         copy_text=result.copywriting,
                         hashtags=result.tags,
-                        cover_image=result.image_urls[0] if result.image_urls else None,
-                        cover_video=video_url
+                        cover_image=result.image_urls[0] if result.image_urls else None
                     )
                     logger.info(f"小红书记录已保存: {task_id}")
             except Exception as e:
@@ -1038,7 +959,6 @@ class XHSService:
                     for p in result.pages
                 ],
                 'image_urls': result.image_urls,
-                'video_url': result.video_url,
                 'titles': result.titles,
                 'copywriting': result.copywriting,
                 'tags': result.tags,
@@ -1055,63 +975,6 @@ class XHSService:
             })
 
 
-    async def generate_explanation_video(
-        self,
-        images: List[str],
-        scripts: List[str],
-        style: str = "ghibli_summer",
-        target_duration: float = 60.0,
-        bgm_url: Optional[str] = None,
-        progress_callback: Optional[Callable[[int, str], None]] = None,
-        video_model: str = "veo3"  # 视频模型: veo3 或 sora2
-    ) -> Optional[str]:
-        """
-        从图片序列生成讲解视频
-        
-        Args:
-            images: 小红书图片 URL 列表
-            scripts: 每张图片的文案列表
-            style: 动画风格（ghibli_summer/cartoon/scientific）
-            target_duration: 目标总时长（秒）
-            bgm_url: 背景音乐 URL（可选）
-            progress_callback: 进度回调 callback(progress: int, status: str)
-            video_model: 视频生成模型（sora2/veo3），默认 sora2
-        
-        Returns:
-            最终视频 URL 或 None
-        """
-        from services.video_sequence_service import VideoSequenceOrchestrator
-        
-        logger.info(f"开始生成讲解视频: {len(images)} 张图片, 风格={style}, 目标时长={target_duration}s, 模型={video_model}")
-        
-        # 创建编排器
-        orchestrator = VideoSequenceOrchestrator(
-            llm_client=self.llm,
-            video_service=self.video_service,
-            prompt_manager=self.prompt_manager,
-            oss_service=self.oss_service,
-            video_model=video_model
-        )
-        
-        # 执行编排
-        video_url = await orchestrator.orchestrate(
-            images=images,
-            scripts=scripts,
-            style=style,
-            target_duration=target_duration,
-            bgm_url=bgm_url,
-            progress_callback=progress_callback,
-            video_model=video_model
-        )
-        
-        if video_url:
-            logger.info(f"讲解视频生成成功: {video_url}")
-        else:
-            logger.error("讲解视频生成失败")
-        
-        return video_url
-
-
 # 全局实例
 _xhs_service: Optional[XHSService] = None
 
@@ -1119,7 +982,6 @@ _xhs_service: Optional[XHSService] = None
 def init_xhs_service(
     llm_client,
     image_service=None,
-    video_service=None,
     oss_service=None
 ) -> XHSService:
     """初始化小红书服务"""
@@ -1127,7 +989,6 @@ def init_xhs_service(
     _xhs_service = XHSService(
         llm_client=llm_client,
         image_service=image_service,
-        video_service=video_service,
         oss_service=oss_service
     )
     return _xhs_service
