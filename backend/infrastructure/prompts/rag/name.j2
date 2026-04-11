@@ -1,0 +1,36 @@
+{% from "rag/shared.j2" import shared_instruction %}
+{% from "rag/answer_base.j2" import answer_base_fields %}
+
+{{ shared_instruction() }}
+
+---
+
+Your answer should be in JSON and strictly follow this schema, filling in the fields in the order they are given:
+```
+class AnswerSchema(BaseModel):
+{{ answer_base_fields() | indent(4, False) }}
+
+    final_answer: Union[str, Literal["N/A"]] = Field(description="""
+If it is a company name, should be extracted exactly as it appears in question.
+If it is a person name, it should be their full name.
+If it is a product name, it should be extracted exactly as it appears in the context.
+Without any extra information, words or comments.
+- Return 'N/A' if information is not available in the context
+""")
+```
+
+---
+
+Example:
+Question:
+"Who was the CEO of 'Southwest Airlines Co.'?"
+
+Answer:
+```
+{
+  "step_by_step_analysis": "1. The question asks for the CEO of 'Southwest Airlines Co.'. The CEO is typically the highest-ranking executive responsible for the overall management of the company, sometimes referred to as the President or Managing Director.\n2. My source of information is a document that appears to be 'Southwest Airlines Co.'s annual report. This document will be used to identify the individual holding the CEO position.\n3. Within the provided document, there is a section that identifies Robert E. Jordan as the President & Chief Executive Officer of 'Southwest Airlines Co.'. The document confirms his role since February 2022.\n4. Therefore, based on the information found in the document, the CEO of 'Southwest Airlines Co.' is Robert E. Jordan.",
+  "reasoning_summary": "'Southwest Airlines Co.''s annual report explicitly names Robert E. Jordan as President & Chief Executive Officer since February 2021. This directly answers the question.",
+  "relevant_pages": [58],
+  "final_answer": "Robert E. Jordan"
+}
+```

@@ -1,0 +1,71 @@
+{% from "rag/shared.j2" import shared_instruction %}
+{% from "rag/answer_base.j2" import answer_base_fields %}
+
+{{ shared_instruction() }}
+
+---
+
+Your answer should be in JSON and strictly follow this schema, filling in the fields in the order they are given:
+```
+class AnswerSchema(BaseModel):
+{{ answer_base_fields() | indent(4, False) }}
+
+    final_answer: Union[float, int, Literal['N/A']] = Field(description="""
+An exact metric number is expected as the answer.
+- Example for percentages:
+    Value from context: 58,3%
+    Final answer: 58.3
+
+Pay special attention to any mentions in the context about whether metrics are reported in units, thousands, or millions to adjust number in final answer with no changes, three zeroes or six zeroes accordingly.
+Pay attention if value wrapped in parentheses, it means that value is negative.
+
+- Example for negative values:
+    Value from context: (2,124,837) CHF
+    Final answer: -2124837
+
+- Example for numbers in thousands:
+    Value from context: 4970,5 (in thousands $)
+    Final answer: 4970500
+
+- Return 'N/A' if metric provided is in a different currency than mentioned in the question
+    Example of value from context: 780000 USD, but question mentions EUR
+    Final answer: 'N/A'
+
+- Return 'N/A' if metric is not directly stated in context EVEN IF it could be calculated from other metrics in the context
+    Example: Requested metric: Dividend per Share; Only available metrics from context: Total Dividends Paid ($5,000,000), and Number of Outstanding Shares (1,000,000); Calculated DPS = Total Dividends / Outstanding Shares.
+    Final answer: 'N/A'
+
+- Return 'N/A' if information is not available in the context
+""")
+```
+
+---
+
+Example 1:
+Question:
+"What was the total assets of 'Waste Connections Inc.' in the fiscal year 2022?"
+
+Answer:
+```
+{
+  "step_by_step_analysis": "1. **Metric Definition:** The question asks for 'total assets' for 'Waste Connections Inc.' in fiscal year 2022.  'Total assets' represents the sum of all resources owned or controlled by the company, expected to provide future economic benefits.\n2. **Context Examination:** The context includes 'Consolidated Balance Sheets' (page 78), a standard financial statement that reports a company's assets, liabilities, and equity.\n3. **Metric Matching:** On page 78, under 'December 31, 2022', a line item labeled 'Total assets' exists.  This directly matches the concept requested in the question.\n4. **Value Extraction and Adjustment:** The value for 'Total assets' is '$18,500,342'. The context indicates this is in thousands of dollars.  Therefore, the full value is 18,500,342,000.\n5. **Confirmation**: No calculation beyond unit adjustment was needed. The reported metric directly matches the question.",
+  "reasoning_summary": "The 'Total assets' value for fiscal year 2022 was directly found on the 'Consolidated Balance Sheets' (page 78). The reported value was in thousands, requiring multiplication by 1000 for the final answer.",
+  "relevant_pages": [78],
+  "final_answer": 18500342000
+}
+```
+
+
+Example 2:
+Question:
+"For Ritter Pharmaceuticals, Inc., what was the value of Research and development equipment, at cost at the end of the period listed in annual report?"
+
+Answer:
+```
+{
+  "step_by_step_analysis": "1. The question asks for 'Research and development equipment, at cost' for Ritter Pharmaceuticals, Inc. This indicates a specific value from the balance sheet, representing the *original purchase price* of equipment specifically used for R&D, *without* any accumulated depreciation.\n2. The context (page 35) shows 'Property and equipment, net' at $12,500.  This is a *net* value (after depreciation), and it's a *broader* category, encompassing all property and equipment, not just R&D equipment.\n3. The context (page 37) also mentions 'Accumulated Depreciation' of $110,000 for 'Machinery and Equipment'. This represents the total *depreciation*, not the original cost, and, importantly, it doesn't specify that this equipment is *exclusively* for R&D.\n4. Neither of these metrics *exactly* matches the requested metric. 'Property and equipment, net' is too broad and represents the depreciated value. 'Accumulated Depreciation' only shows depreciation, not cost, and lacks R&D specificity.\n5. Since the context doesn't provide the *original cost* of *only* R&D equipment, and we cannot make assumptions, perform calculations, or combine information, the answer is 'N/A'.",
+  "reasoning_summary": "The context lacks a specific line item for 'Research and development equipment, at cost.' 'Property and equipment, net' is depreciated and too broad, while 'Accumulated Depreciation' only represents depreciation, not original cost, and is not R&D-specific. Strict matching requires 'N/A'.",
+  "relevant_pages": [35, 37],
+  "final_answer": "N/A"
+}
+```

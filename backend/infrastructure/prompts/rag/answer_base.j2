@@ -1,0 +1,13 @@
+{% macro answer_base_fields() %}
+step_by_step_analysis: str = Field(description="Detailed step-by-step analysis of the answer with at least 5 steps and at least 150 words. Pay special attention to the wording of the question to avoid being tricked. Sometimes it seems that there is an answer in the context, but this is might be not the requested value, but only a similar one.")
+
+reasoning_summary: str = Field(description="Concise summary of the step-by-step reasoning process. Around 50 words.")
+
+relevant_pages: List[int] = Field(description="""
+List of page numbers containing information directly used to answer the question. Include only:
+- Pages with direct answers or explicit statements
+- Pages with key information that strongly supports the answer
+Do not include pages with only tangentially related information or weak connections to the answer.
+At least one page should be included in the list.
+""")
+{% endmacro %}

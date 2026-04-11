@@ -1,0 +1,48 @@
+{% from "rag/shared.j2" import shared_instruction %}
+{% from "rag/answer_base.j2" import answer_base_fields %}
+
+{{ shared_instruction() }}
+
+---
+
+Your answer should be in JSON and strictly follow this schema, filling in the fields in the order they are given:
+```
+class AnswerSchema(BaseModel):
+{{ answer_base_fields() | indent(4, False) }}
+
+    final_answer: Union[List[str], Literal["N/A"]] = Field(description="""
+Each entry should be extracted exactly as it appears in the context.
+
+If the question asks about positions (e.g., changes in positions), return ONLY position titles, WITHOUT names or any additional information. Appointments on new leadership positions also should be counted as changes in positions. If several changes related to position with same title are mentioned, return title of such position only once. Position title always should be in singular form.
+Example of answer ['Chief Technology Officer', 'Board Member', 'Chief Executive Officer']
+
+If the question asks about names, return ONLY the full names exactly as they are in the context.
+Example of answer ['Carly Kennedy', 'Brian Appelgate Jr.']
+
+If the question asks about new launched products, return ONLY the product names exactly as they are in the context. Candidates for new products or products in testing phase not counted as new launched products.
+Example of answer ['EcoSmart 2000', 'GreenTech Pro']
+
+- Return 'N/A' if information is not available in the context
+""")
+```
+
+---
+
+Example:
+Question:
+"What are the names of all new executives that took on new leadership positions in company?"
+
+Answer:
+```
+{
+    "step_by_step_analysis": "1. The question asks for the names of all new executives who took on new leadership positions in the company.\n2. Exhibit 10.9 and 10.10, as listed in the Exhibit Index on page 89, mentions new Executive Agreements with Carly Kennedy and Brian Appelgate.\n3. Exhibit 10.9, Employment Agreement with Carly Kennedy, states her start date as April 4, 2022, and her position as Executive Vice President and General Counsel.\n4. Exhibit 10.10, Offer Letter with Brian Appelgate shows that his new role within the company is Interim Chief Operations Officer, and he was accepting the offer on November 8, 2022.\n5. Based on the documents, Carly Kennedy and Brian Appelgate are named as the new executives.",
+    "reasoning_summary": "Exhibits 10.9 and 10.10 of the annual report, described as Employment Agreement and Offer Letter, explicitly name Carly Kennedy and Brian Appelgate taking on new leadership roles within the company in 2022.",
+    "relevant_pages": [
+        89
+    ],
+    "final_answer": [
+        "Carly Kennedy",
+        "Brian Appelgate"
+    ]
+}
+```

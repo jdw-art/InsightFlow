@@ -1,6 +1,4 @@
 """
-InsightFlow 基础设施模块
-
 统一 Prompt 模板管理模块
 
 所有 Prompt 模板统一存放在 infrastructure/prompts/ 下的子目录中:

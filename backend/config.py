@@ -1,5 +1,5 @@
 """
-InsightFlow 后端配置文件
+vibe-blog 后端配置文件
 技术科普绘本生成器
 """
 import os
