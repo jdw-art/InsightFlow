@@ -170,36 +170,6 @@ def create_app(config_class=None):
     def health_check():
         return {'status': 'ok', 'service': 'banana-blog'}
 
-    # ========== vibe-reviewer 初始化 ==========
-    if os.environ.get('REVIEWER_ENABLED', 'false').lower() != 'true':
-        logger.info("vibe-reviewer 功能未启用 (REVIEWER_ENABLED != true)")
-    else:
-      try:
-        from vibe_reviewer import init_reviewer_service, get_reviewer_service
-        from vibe_reviewer.api import register_reviewer_routes
-
-        reviewer_search_service = None
-        try:
-            reviewer_search_service = get_search_service()
-            if reviewer_search_service and reviewer_search_service.is_available():
-                logger.info("vibe-reviewer 将使用智谱搜索服务进行增强评估")
-            else:
-                logger.warning("vibe-reviewer 搜索服务不可用，将仅使用 LLM 评估")
-                reviewer_search_service = None
-        except Exception as e:
-            logger.warning(f"获取搜索服务失败: {e}")
-
-        init_reviewer_service(
-            llm_service=get_llm_service(),
-            search_service=reviewer_search_service,
-        )
-
-        register_reviewer_routes(app)
-
-        logger.info("vibe-reviewer 模块已初始化")
-      except Exception as e:
-        logger.warning(f"vibe-reviewer 模块初始化失败 (可选模块): {e}")
-
     logger.info("Vibe Blog 后端应用已启动")
     return app
 

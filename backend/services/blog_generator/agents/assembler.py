@@ -263,7 +263,7 @@ class AssemblerAgent:
             code_blocks=code_blocks,
             images=images,
             document_references=document_references,
-            search_results=search_resultser
+            search_results=search_results
         )
         
         state['final_markdown'] = result.get('markdown', '')
