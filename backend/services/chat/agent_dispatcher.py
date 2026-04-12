@@ -6,12 +6,12 @@ AgentDispatcher — Agent 方法分发器
 import logging
 from typing import Optional, Dict, Any, List
 
-from services.blog_generator.agents import (
+from services.report_generator.agents import (
     ResearcherAgent, PlannerAgent, WriterAgent, CoderAgent,
     ArtistAgent, ReviewerAgent, AssemblerAgent, SearchCoordinator,
 )
-from services.blog_generator.agents.factcheck import FactCheckAgent
-from services.blog_generator.agents.humanizer import HumanizerAgent
+from services.report_generator.agents.factcheck import FactCheckAgent
+from services.report_generator.agents.humanizer import HumanizerAgent
 from services.chat.writing_session import WritingSession
 
 logger = logging.getLogger(__name__)

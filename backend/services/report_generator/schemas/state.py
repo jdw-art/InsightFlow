@@ -21,8 +21,8 @@ class SectionOutline(BaseModel):
     key_quote: str = ""
 
 
-class BlogOutline(BaseModel):
-    """博客大纲"""
+class ReportOutline(BaseModel):
+    """报告大纲"""
     title: str
     subtitle: str
     reading_time: int
@@ -269,9 +269,9 @@ class SharedState(TypedDict):
     prefetch_docs: List[dict]  # Feature G: 预取的知识库文档
 
     # 配图异步任务（coder_and_artist → wait_for_images 传递）
-    # Future/Executor 本身存在 BlogGenerator._image_tasks 实例字典中，
+    # Future/Executor 本身存在 ReportGenerator._image_tasks 实例字典中，
     # state 只存一个普通字符串 key，避免 LangGraph msgpack 序列化失败
-    _image_task_id: Optional[str]  # 用于从 BlogGenerator._image_tasks 取回 Future
+    _image_task_id: Optional[str]  # 用于从 ReportGenerator._image_tasks 取回 Future
 
 
 def get_max_search_count(target_length: str) -> int:

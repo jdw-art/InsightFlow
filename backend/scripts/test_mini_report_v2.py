@@ -1,5 +1,5 @@
 """
-Mini 博客动画 v2 集成测试脚本
+Mini 报告动画 v2 集成测试脚本
 
 验证点：
 1. Mini 模式配置是否正确
@@ -8,7 +8,7 @@ Mini 博客动画 v2 集成测试脚本
 4. 动画 Prompt 是否传入（解决中文变形）
 
 使用方法：
-    python -m backend.scripts.test_mini_blog_v2 --topic "Python 装饰器入门"
+    python -m backend.scripts.test_mini_report_v2 --topic "Python 装饰器入门"
 """
 
 import asyncio
@@ -29,16 +29,16 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def test_mini_blog(topic: str):
-    """测试 Mini 博客完整流程"""
+def test_mini_report(topic: str):
+    """测试 Mini 报告完整流程"""
     from dotenv import load_dotenv
     load_dotenv()
-    
+
     import os
-    from backend.services.blog_generator.blog_service import init_blog_service, get_blog_service
+    from backend.services.report_generator.report_service import init_report_service, get_report_service
     from backend.services.llm_service import init_llm_service
     from backend.services.image_service import init_image_service
-    from backend.services.blog_generator.services.search_service import init_search_service
+    from backend.services.report_generator.services.search_service import init_search_service
     
     # 构建配置
     config = {

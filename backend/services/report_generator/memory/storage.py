@@ -2,7 +2,7 @@
 MemoryStorage — 按用户隔离的 JSON 文件持久化记忆存储（102.03）
 
 借鉴 DeerFlow memory.json 存储 + mtime 缓存 + 原子写入模式，
-适配 VibeBlog 多用户博客生成场景。
+适配 VibeReport 多用户报告生成场景。
 """
 
 import json

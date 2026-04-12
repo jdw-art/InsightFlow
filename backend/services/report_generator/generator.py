@@ -1,5 +1,5 @@
 """
-长文博客生成器 - LangGraph 工作流主入口
+长文报告生成器 - LangGraph 工作流主入口
 """
 
 import logging
@@ -65,13 +65,13 @@ def _log_word_count_diff(agent_name: str, before: int, after: int):
         logger.info(f"📊 [{agent_name}] 字数变化: {before} → {after} ({diff} 字)")
 
 
-class BlogGenerator:
+class ReportGenerator:
     """
-    长文博客生成器
-    
+    长文报告生成器
+
     基于 LangGraph 实现的 Multi-Agent 协同生成系统
     """
-    
+
     def __init__(
         self,
         llm_client,
@@ -82,7 +82,7 @@ class BlogGenerator:
         style: StyleProfile = None
     ):
         """
-        初始化博客生成器
+        初始化报告生成器
 
         Args:
             llm_client: LLM 客户端
@@ -142,8 +142,8 @@ class BlogGenerator:
         self._layer_validator = None
         if os.environ.get('LAYER_VALIDATION_ENABLED', 'false').lower() == 'true':
             try:
-                from .orchestrator.layer_definitions import BLOG_LAYERS, LayerValidator
-                self._layer_validator = LayerValidator(BLOG_LAYERS)
+                from .orchestrator.layer_definitions import REPORT_LAYERS, LayerValidator
+                self._layer_validator = LayerValidator(REPORT_LAYERS)
                 logger.info("🏗️ 分层架构校验已启用")
             except Exception as e:
                 logger.warning(f"分层架构校验初始化失败: {e}")
@@ -186,8 +186,8 @@ class BlogGenerator:
         self._memory_storage = None
         if os.getenv('MEMORY_ENABLED', 'false').lower() == 'true':
             try:
-                from .memory import MemoryStorage, BlogMemoryConfig
-                mem_config = BlogMemoryConfig.from_env()
+                from .memory import MemoryStorage, ReportMemoryConfig
+                mem_config = ReportMemoryConfig.from_env()
                 self._memory_storage = MemoryStorage(storage_path=mem_config.storage_path)
                 logger.info("102.03 MemoryStorage 已启用")
             except Exception as e:
@@ -1002,7 +1002,7 @@ class BlogGenerator:
         recursion_limit = base_nodes + max_loops + 5
 
         return {
-            "configurable": {"thread_id": f"blog_{state.get('topic', 'default')}"},
+            "configurable": {"thread_id": f"report_{state.get('topic', 'default')}"},
             "recursion_limit": recursion_limit,
         }
 
@@ -1258,9 +1258,9 @@ class BlogGenerator:
         task_log = None
         try:
             import os as _os
-            if _os.environ.get('BLOG_TASK_LOG_ENABLED', 'true').lower() == 'true':
-                from .utils.task_log import BlogTaskLog
-                task_log = BlogTaskLog(
+            if _os.environ.get('REPORT_TASK_LOG_ENABLED', 'true').lower() == 'true':
+                from .utils.task_log import ReportTaskLog
+                task_log = ReportTaskLog(
                     topic=topic,
                     article_type=article_type,
                     target_length=target_length,
@@ -1273,8 +1273,8 @@ class BlogGenerator:
 
         # 创建 ToolManager 并注册现有工具（37.09）
         try:
-            from utils.tool_manager import BlogToolManager
-            tool_manager = BlogToolManager(task_log=task_log)
+            from utils.tool_manager import ReportToolManager
+            tool_manager = ReportToolManager(task_log=task_log)
             if self.search_service:
                 tool_manager.register(
                     "web_search", self.search_service.search,

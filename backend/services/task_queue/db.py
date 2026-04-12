@@ -15,7 +15,7 @@ from typing import Optional
 import aiosqlite
 
 from .models import (
-    BlogTask, BlogGenerationConfig, ExecutionRecord,
+    ReportTask, ReportGenerationConfig, ExecutionRecord,
     QueueStatus, TriggerConfig,
 )
 
@@ -37,7 +37,7 @@ class TaskDB:
 
     # ── 任务 CRUD ──
 
-    async def save_task(self, task: BlogTask):
+    async def save_task(self, task: ReportTask):
         async with aiosqlite.connect(self.db_path) as db:
             await db.execute("""
                 INSERT OR REPLACE INTO task_queue
@@ -62,7 +62,7 @@ class TaskDB:
             ))
             await db.commit()
 
-    async def get_task(self, task_id: str) -> Optional[BlogTask]:
+    async def get_task(self, task_id: str) -> Optional[ReportTask]:
         async with aiosqlite.connect(self.db_path) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute(
@@ -75,7 +75,7 @@ class TaskDB:
 
     async def get_tasks_by_status(
         self, status: QueueStatus, limit: int = 50
-    ) -> list[BlogTask]:
+    ) -> list[ReportTask]:
         async with aiosqlite.connect(self.db_path) as db:
             db.row_factory = aiosqlite.Row
             async with db.execute(
@@ -141,14 +141,14 @@ class TaskDB:
     # ── 内部转换 ──
 
     @staticmethod
-    def _row_to_task(row: dict) -> BlogTask:
-        return BlogTask(
+    def _row_to_task(row: dict) -> ReportTask:
+        return ReportTask(
             id=row['id'], name=row['name'],
             description=row['description'],
             trigger=TriggerConfig.model_validate_json(
                 row['trigger_config']
             ),
-            generation=BlogGenerationConfig.model_validate_json(
+            generation=ReportGenerationConfig.model_validate_json(
                 row['generation_config']
             ),
             status=QueueStatus(row['status']),

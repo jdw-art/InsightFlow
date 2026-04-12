@@ -2,9 +2,9 @@
 task_queue 数据模型 — Pydantic v2
 
 核心模型：
-- BlogTask: 博客生成任务（排队/执行/结果）
+- ReportTask: 报告生成任务（排队/执行/结果）
 - TriggerConfig: 触发配置（手动）
-- BlogGenerationConfig: 生成参数
+- ReportGenerationConfig: 生成参数
 - ExecutionRecord: 执行历史记录
 """
 import uuid
@@ -43,7 +43,7 @@ class TriggerConfig(BaseModel):
     human_readable: Optional[str] = None
 
 
-class BlogGenerationConfig(BaseModel):
+class ReportGenerationConfig(BaseModel):
     topic: str
     article_type: str = "tutorial"
     target_length: str = "medium"
@@ -54,14 +54,14 @@ class BlogGenerationConfig(BaseModel):
     custom_word_count: Optional[int] = None
 
 
-class BlogTask(BaseModel):
-    """博客生成任务"""
+class ReportTask(BaseModel):
+    """报告生成任务"""
     id: str = Field(default_factory=lambda: str(uuid.uuid4())[:8])
     name: str
     description: Optional[str] = None
 
     trigger: TriggerConfig = Field(default_factory=TriggerConfig)
-    generation: BlogGenerationConfig
+    generation: ReportGenerationConfig
 
     status: QueueStatus = QueueStatus.QUEUED
     priority: TaskPriority = TaskPriority.NORMAL

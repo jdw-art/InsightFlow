@@ -88,7 +88,7 @@ class DeepScraper:
         timeout: int = 30,
         top_n: int = 3,
     ):
-        from services.blog_generator.services.jina_reader import JinaReader
+        from services.report_generator.services.jina_reader import JinaReader
         self.jina = JinaReader(api_key=jina_api_key, timeout=timeout)
         self.httpx = HttpxScraper(timeout=timeout)
         self.llm_service = llm_service
@@ -98,7 +98,7 @@ class DeepScraper:
         self._extractor = None
         if os.environ.get("GOAL_EXTRACTION_ENABLED", "false").lower() == "true":
             try:
-                from services.blog_generator.services.goal_directed_extractor import GoalDirectedExtractor
+                from services.report_generator.services.goal_directed_extractor import GoalDirectedExtractor
                 self._extractor = GoalDirectedExtractor(llm_service=llm_service)
                 logger.info("Goal-directed extraction enabled")
             except Exception as e:

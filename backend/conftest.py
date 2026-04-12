@@ -1,5 +1,5 @@
 """
-Shared pytest fixtures for VibeBlog backend tests.
+Shared pytest fixtures for VibeReport backend tests.
 """
 import os
 import sys
@@ -21,14 +21,14 @@ def app(monkeypatch):
     from unittest.mock import MagicMock
 
     # Mock service getters
-    mock_blog_svc = MagicMock()
+    mock_report_svc = MagicMock()
     mock_db_svc = MagicMock()
     mock_task_mgr = MagicMock()
     mock_file_parser = MagicMock()
 
-    monkeypatch.setattr('routes.blog_routes.get_blog_service', lambda: mock_blog_svc)
-    monkeypatch.setattr('routes.blog_routes.get_db_service', lambda: mock_db_svc)
-    monkeypatch.setattr('routes.blog_routes.get_file_parser', lambda: mock_file_parser)
+    monkeypatch.setattr('routes.report_routes.get_report_service', lambda: mock_report_svc)
+    monkeypatch.setattr('routes.report_routes.get_db_service', lambda: mock_db_svc)
+    monkeypatch.setattr('routes.report_routes.get_file_parser', lambda: mock_file_parser)
     monkeypatch.setattr('routes.history_routes.get_db_service', lambda: mock_db_svc)
     monkeypatch.setattr('routes.task_routes.get_task_manager', lambda: mock_task_mgr)
     monkeypatch.setattr('routes.static_routes.get_db_service', lambda: mock_db_svc)
@@ -41,7 +41,7 @@ def app(monkeypatch):
     })
 
     # Store mocks on app for access in tests
-    flask_app.mock_blog_service = mock_blog_svc
+    flask_app.mock_report_service = mock_report_svc
     flask_app.mock_db_service = mock_db_svc
     flask_app.mock_task_manager = mock_task_mgr
     flask_app.mock_file_parser = mock_file_parser
@@ -72,12 +72,12 @@ def mock_db():
 
 
 @pytest.fixture
-def sample_blog_data():
-    """Sample blog data for testing."""
+def sample_report_data():
+    """Sample report data for testing."""
     return {
-        'id': 'test-blog-123',
-        'title': 'Test Blog Title',
-        'content': '# Test Content\n\nThis is a test blog.',
+        'id': 'test-report-123',
+        'title': 'Test Report Title',
+        'content': '# Test Content\n\nThis is a test report.',
         'cover_image': 'https://example.com/cover.jpg',
         'cover_video': 'https://example.com/cover.mp4',
         'word_count': 1500,
@@ -92,7 +92,7 @@ def sample_blog_data():
 def mock_llm_response():
     """Mock LLM response."""
     return {
-        'content': 'This is a generated blog post about AI.',
+        'content': 'This is a generated report about AI.',
         'usage': {
             'prompt_tokens': 100,
             'completion_tokens': 200,
@@ -143,14 +143,14 @@ def mock_oss_service():
     return service
 
 
-# ============ Blog Generator Fixtures ============
+# ============ Report Generator Fixtures ============
 
 @pytest.fixture
-def mock_blog_generator(mock_llm_service, mock_image_service, mock_video_service):
-    """Mock blog generator."""
+def mock_report_generator(mock_llm_service, mock_image_service, mock_video_service):
+    """Mock report generator."""
     generator = MagicMock()
     generator.generate.return_value = {
-        'title': 'Generated Blog Title',
+        'title': 'Generated Report Title',
         'content': '# Generated Content\n\nThis is generated.',
         'cover_image': 'https://example.com/cover.jpg',
         'cover_video': 'https://example.com/cover.mp4',
@@ -179,9 +179,9 @@ def mock_env_vars(monkeypatch):
 # ============ Cleanup Fixtures ============
 
 @pytest.fixture
-def mock_blog_service(app):
-    """Get mock blog service from app."""
-    return app.mock_blog_service
+def mock_report_service(app):
+    """Get mock report service from app."""
+    return app.mock_report_service
 
 
 @pytest.fixture
@@ -268,9 +268,9 @@ def mock_dispatcher():
 @pytest.fixture
 def chat_app(monkeypatch, mock_dispatcher, chat_session_mgr):
     """Flask app with chat services initialized."""
-    monkeypatch.setattr('routes.blog_routes.get_blog_service', lambda: MagicMock())
-    monkeypatch.setattr('routes.blog_routes.get_db_service', lambda: MagicMock())
-    monkeypatch.setattr('routes.blog_routes.get_file_parser', lambda: MagicMock())
+    monkeypatch.setattr('routes.report_routes.get_report_service', lambda: MagicMock())
+    monkeypatch.setattr('routes.report_routes.get_db_service', lambda: MagicMock())
+    monkeypatch.setattr('routes.report_routes.get_file_parser', lambda: MagicMock())
     monkeypatch.setattr('routes.history_routes.get_db_service', lambda: MagicMock())
     monkeypatch.setattr('routes.task_routes.get_task_manager', lambda: MagicMock())
     monkeypatch.setattr('routes.static_routes.get_db_service', lambda: MagicMock())

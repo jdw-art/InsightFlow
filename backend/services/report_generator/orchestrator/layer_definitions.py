@@ -1,5 +1,5 @@
 """
-37.12 博客生成分层架构 — Layer 定义与层间契约校验
+37.12 报告生成分层架构 — Layer 定义与层间契约校验
 
 将 19 节点扁平 DAG 抽象为 7 层流水线：
   Research → Structure → Content → Enhancement → Validate → Quality → Output
@@ -47,7 +47,7 @@ class Layer:
 
 # ==================== 7 层定义 ====================
 
-BLOG_LAYERS: List[Layer] = [
+REPORT_LAYERS: List[Layer] = [
     Layer(
         name="research",
         description="素材收集层",

@@ -1,7 +1,7 @@
 """
-结构化任务日志模块 — BlogTaskLog + StepLog + StepTimer
+结构化任务日志模块 — ReportTaskLog + StepLog + StepTimer
 
-记录每篇博客的完整生成过程：每个 Agent 的步骤、token 用量、执行时间。
+记录每篇报告的完整生成过程：每个 Agent 的步骤、token 用量、执行时间。
 任务完成后持久化为 JSON 文件。
 
 来源：37.08 MiroThinker 特性改造
@@ -32,11 +32,11 @@ class StepLog:
 
 
 @dataclass
-class BlogTaskLog:
+class ReportTaskLog:
     """
-    博客生成任务日志 — 结构化记录整个生成过程。
+    报告生成任务日志 — 结构化记录整个生成过程。
 
-    每次博客生成创建一个实例，记录所有 Agent 的执行步骤、
+    每次报告生成创建一个实例，记录所有 Agent 的执行步骤、
     token 用量、执行时间。生成完成后保存为 JSON 文件。
     """
 
@@ -65,7 +65,7 @@ class BlogTaskLog:
         if not self.start_time:
             self.start_time = datetime.now().isoformat()
         if not self.task_id:
-            self.task_id = f"blog_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
+            self.task_id = f"report_{datetime.now().strftime('%Y%m%d_%H%M%S')}"
 
     def log_step(
         self,
@@ -132,16 +132,16 @@ class BlogTaskLog:
         self.log_step("system", "task_failed", error, level="error")
 
     def save(self, logs_dir: str = None) -> str:
-        """保存为 JSON 文件到 logs/blog_tasks/{task_id}/task.json"""
+        """保存为 JSON 文件到 logs/report_tasks/{task_id}/task.json"""
         if logs_dir:
             base_logs_dir = logs_dir
-        elif os.environ.get("BLOG_LOGS_DIR"):
-            base_logs_dir = os.environ["BLOG_LOGS_DIR"]
+        elif os.environ.get("REPORT_LOGS_DIR"):
+            base_logs_dir = os.environ["REPORT_LOGS_DIR"]
         else:
-            # 统一使用 vibe-blog/logs/blog_tasks 目录（与 logging_config.py / 启动脚本一致）
-            # task_log.py → utils/ → blog_generator/ → services/ → backend/ → vibe-blog/
+            # 统一使用 vibe-report/logs/report_tasks 目录（与 logging_config.py / 启动脚本一致）
+            # task_log.py → utils/ → report_generator/ → services/ → backend/ → vibe-report/
             project_root = Path(__file__).resolve().parent.parent.parent.parent.parent
-            base_logs_dir = str(project_root / "logs" / "blog_tasks")
+            base_logs_dir = str(project_root / "logs" / "report_tasks")
         task_dir = Path(base_logs_dir) / self.task_id
         task_dir.mkdir(parents=True, exist_ok=True)
 
@@ -156,7 +156,7 @@ class BlogTaskLog:
         """生成人类可读的摘要"""
         total_tok = self.total_tokens["input"] + self.total_tokens["output"]
         lines = [
-            f"博客生成报告 [{self.task_id}]",
+            f"报告生成报告 [{self.task_id}]",
             f"  主题: {self.topic}",
             f"  状态: {self.status}",
             f"  总用时: {self.total_duration_ms / 1000:.1f}s",
@@ -186,7 +186,7 @@ class BlogTaskLog:
 class StepTimer:
     """步骤计时器（上下文管理器）"""
 
-    def __init__(self, task_log: BlogTaskLog, agent: str, action: str, **metadata):
+    def __init__(self, task_log: ReportTaskLog, agent: str, action: str, **metadata):
         self.task_log = task_log
         self.agent = agent
         self.action = action

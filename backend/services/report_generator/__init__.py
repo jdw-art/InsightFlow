@@ -1,7 +1,7 @@
 """
-长文博客生成器 - Multi-Agent 协同生成系统
+长文报告生成器 - Multi-Agent 协同生成系统
 
-基于 LangGraph 实现的技术博客自动生成系统，包含以下 Agent:
+基于 LangGraph 实现的技术报告自动生成系统，包含以下 Agent:
 - Researcher: 联网搜索收集背景资料
 - Planner: 大纲规划
 - Writer: 内容撰写
@@ -12,11 +12,11 @@
 - Assembler: 文档组装
 """
 
-from .generator import BlogGenerator
+from .generator import ReportGenerator
 from .services.search_service import SearchService, init_search_service, get_search_service
 
 __all__ = [
-    'BlogGenerator',
+    'ReportGenerator',
     'SearchService',
     'init_search_service',
     'get_search_service',

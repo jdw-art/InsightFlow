@@ -1,6 +1,6 @@
 """
-vibe-blog 后端应用入口
-技术科普绘本生成器
+vibe-report 后端应用入口
+技术科普报告生成器
 """
 import os
 import logging
@@ -122,9 +122,9 @@ def create_app(config_class=None):
     else:
         logger.warning("MINERU_TOKEN 未配置，PDF 解析功能不可用")
 
-    # 初始化博客生成相关服务（搜索 + 博客）
-    from routes.blog_routes import init_blog_services
-    init_blog_services(app.config)
+    # 初始化报告生成相关服务（搜索 + 报告）
+    from routes.report_routes import init_report_services
+    init_report_services(app.config)
 
     # 初始化任务排队系统（TaskQueueManager）
     try:
@@ -168,9 +168,9 @@ def create_app(config_class=None):
     # 健康检查
     @app.route('/health')
     def health_check():
-        return {'status': 'ok', 'service': 'banana-blog'}
+        return {'status': 'ok', 'service': 'banana-report'}
 
-    logger.info("Vibe Blog 后端应用已启动")
+    logger.info("InsightFlow 后端应用已启动")
     return app
 
 

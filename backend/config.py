@@ -1,6 +1,6 @@
 """
-vibe-blog 后端配置文件
-技术科普绘本生成器
+vibe-report 后端配置文件
+技术科普报告生成器
 """
 import os
 from datetime import timedelta
@@ -14,7 +14,7 @@ PROJECT_ROOT = os.path.dirname(BASE_DIR)
 class Config:
     """基础配置"""
     # Flask 配置
-    SECRET_KEY = os.getenv('SECRET_KEY', 'banana-blog-secret-key')
+    SECRET_KEY = os.getenv('SECRET_KEY', 'banana-report-secret-key')
     
     # 文件存储配置
     UPLOAD_FOLDER = os.path.join(BASE_DIR, 'uploads')
@@ -36,7 +36,7 @@ class Config:
     CORS_ORIGINS = os.getenv('CORS_ORIGINS', '*').split(',')
     
     # Prompt 模板目录
-    PROMPTS_DIR = os.path.join(BASE_DIR, 'services', 'blog_generator', 'templates')
+    PROMPTS_DIR = os.path.join(BASE_DIR, 'services', 'report_generator', 'templates')
     
     # Nano Banana 图片生成 API
     NANO_BANANA_API_KEY = os.getenv('NANO_BANANA_API_KEY', '')
@@ -89,8 +89,8 @@ class Config:
     TOKEN_TOTAL_BUDGET = int(os.getenv('TOKEN_TOTAL_BUDGET', '500000'))
 
     # 结构化任务日志
-    BLOG_TASK_LOG_ENABLED = os.getenv('BLOG_TASK_LOG_ENABLED', 'true').lower() == 'true'
-    BLOG_LOGS_DIR = os.getenv('BLOG_LOGS_DIR', 'logs/blog_tasks')
+    REPORT_TASK_LOG_ENABLED = os.getenv('REPORT_TASK_LOG_ENABLED', 'true').lower() == 'true'
+    REPORT_LOGS_DIR = os.getenv('REPORT_LOGS_DIR', 'logs/report_tasks')
 
     # SSE 流式事件增量优化（37.34）
     SSE_LLM_EVENTS_ENABLED = os.getenv('SSE_LLM_EVENTS_ENABLED', 'true').lower() == 'true'

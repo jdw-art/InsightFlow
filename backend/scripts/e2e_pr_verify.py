@@ -132,9 +132,9 @@ async def test_4_generate_and_progress(browser):
     print("\n[Test 4] Mini 生成 + Dashboard 进度条")
 
     # Step 1: 通过 API 发起 mini 生成
-    log("发起 mini 博客生成...")
+    log("发起 mini 报告生成...")
     async with httpx.AsyncClient(timeout=30) as c:
-        resp = await c.post(f"{BACKEND_URL}/api/blog/generate", json={
+        resp = await c.post(f"{BACKEND_URL}/api/report/generate", json={
             "topic": "Playwright E2E 测试最佳实践",
             "target_length": "mini",
             "image_style": "default",
@@ -450,7 +450,7 @@ async def test_6_cancel_task(browser):
 
     # 发起一个任务
     async with httpx.AsyncClient(timeout=30) as c:
-        resp = await c.post(f"{BACKEND_URL}/api/blog/generate", json={
+        resp = await c.post(f"{BACKEND_URL}/api/report/generate", json={
             "topic": "这个任务会被取消",
             "target_length": "mini",
         })

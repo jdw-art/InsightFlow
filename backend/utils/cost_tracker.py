@@ -5,7 +5,7 @@
 1. 实时 USD 成本估算（基于 PRICING 表）
 2. 预算熔断器（超过阈值自动告警/中断）
 3. 限流器指标聚合（从 GlobalRateLimiter 获取等待统计）
-4. 成本摘要输出（供 BlogTaskLog 和 SSE 使用）
+4. 成本摘要输出（供 ReportTaskLog 和 SSE 使用）
 
 环境变量：
 - COST_TRACKING_ENABLED: 是否启用成本追踪（默认 false）

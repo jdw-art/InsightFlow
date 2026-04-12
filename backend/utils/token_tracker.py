@@ -93,7 +93,7 @@ class TokenTracker:
         )
 
     def get_summary(self) -> Dict:
-        """获取汇总数据（供 BlogTaskLog 使用）"""
+        """获取汇总数据（供 ReportTaskLog 使用）"""
         return {
             "total_input_tokens": self.total_input_tokens,
             "total_output_tokens": self.total_output_tokens,

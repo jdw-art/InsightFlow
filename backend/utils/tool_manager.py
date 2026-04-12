@@ -1,5 +1,5 @@
 """
-统一工具管理器 — BlogToolManager
+统一工具管理器 — ReportToolManager
 
 轻量级 Python 函数注册，统一管理搜索、图片生成、视频生成等工具的
 注册、执行、超时保护和日志。不引入 MCP 协议。
@@ -26,15 +26,15 @@ class ToolDefinition:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 
-class BlogToolManager:
+class ReportToolManager:
     """
-    博客生成工具管理器
+    报告生成工具管理器
 
     功能：
     1. 统一工具注册和发现
     2. 工具黑名单
     3. 超时保护（threading 实现，适配 Flask 同步架构）
-    4. 执行日志（集成 BlogTaskLog）
+    4. 执行日志（集成 ReportTaskLog）
     5. 执行统计
     """
 
@@ -170,7 +170,7 @@ class BlogToolManager:
     # ---- 日志 ----
 
     def set_task_log(self, task_log) -> None:
-        """注入 BlogTaskLog"""
+        """注入 ReportTaskLog"""
         self._task_log = task_log
 
     def _log_to_task_log(self, tool_name: str, duration_ms: int, level: str = "info", detail: str = ""):

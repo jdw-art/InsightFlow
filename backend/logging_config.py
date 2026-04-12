@@ -59,7 +59,7 @@ def _resolve_level(level: str | int) -> int:
 
 
 def _iter_vibe_handlers(handlers: Iterable[logging.Handler]) -> list[logging.Handler]:
-    return [h for h in handlers if getattr(h, "_vibe_blog_handler", False)]
+    return [h for h in handlers if getattr(h, "_vibe_report_handler", False)]
 
 
 def _ensure_task_filter(root_logger: logging.Logger) -> TaskIdFilter:
@@ -67,7 +67,7 @@ def _ensure_task_filter(root_logger: logging.Logger) -> TaskIdFilter:
         if isinstance(f, TaskIdFilter):
             return f
     task_filter = TaskIdFilter()
-    task_filter._vibe_blog_filter = True  # type: ignore[attr-defined]
+    task_filter._vibe_report_filter = True  # type: ignore[attr-defined]
     root_logger.addFilter(task_filter)
     return task_filter
 
@@ -124,7 +124,7 @@ def setup_logging(log_level: str | int = "INFO", log_dir: str | None = None, ena
     console_handler.setLevel(level)
     console_handler.setFormatter(console_formatter)
     console_handler.addFilter(task_filter)
-    console_handler._vibe_blog_handler = True  # type: ignore[attr-defined]
+    console_handler._vibe_report_handler = True  # type: ignore[attr-defined]
     root_logger.addHandler(console_handler)
 
     # 屏蔽高频噪音日志
@@ -139,7 +139,7 @@ def setup_logging(log_level: str | int = "INFO", log_dir: str | None = None, ena
     # 文件 handler：在只读环境（如 Vercel）下自动跳过
     try:
         base_dir = os.path.dirname(os.path.realpath(__file__))
-        # 统一日志目录到 vibe-blog/logs/（与启动脚本一致）
+        # 统一日志目录到 vibe-report/logs/（与启动脚本一致）
         project_root = os.path.dirname(base_dir)
         resolved_log_dir = log_dir or os.path.join(project_root, "logs")
         os.makedirs(resolved_log_dir, exist_ok=True)
@@ -151,7 +151,7 @@ def setup_logging(log_level: str | int = "INFO", log_dir: str | None = None, ena
         file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(plain_formatter)
         file_handler.addFilter(task_filter)
-        file_handler._vibe_blog_handler = True  # type: ignore[attr-defined]
+        file_handler._vibe_report_handler = True  # type: ignore[attr-defined]
         root_logger.addHandler(file_handler)
     except (OSError, IOError):
         # 只读文件系统：保留控制台日志即可
@@ -181,12 +181,12 @@ class TaskIdMatchFilter(logging.Filter):
 def create_task_logger(task_id: str, log_dir: str | None = None) -> logging.Handler:
     """为指定任务创建独立的文件日志 handler。
 
-    日志写入 ``logs/blog_tasks/{task_id}/task.log``。
+    日志写入 ``logs/report_tasks/{task_id}/task.log``。
     返回 handler 实例，调用方需在任务结束后调用 ``remove_task_logger`` 清理。
     """
     base_dir = os.path.dirname(os.path.realpath(__file__))
     project_root = os.path.dirname(base_dir)
-    resolved_log_dir = log_dir or os.path.join(project_root, "logs", "blog_tasks")
+    resolved_log_dir = log_dir or os.path.join(project_root, "logs", "report_tasks")
     task_dir = os.path.join(resolved_log_dir, task_id)
     os.makedirs(task_dir, exist_ok=True)
 
@@ -200,7 +200,7 @@ def create_task_logger(task_id: str, log_dir: str | None = None) -> logging.Hand
     handler.setLevel(logging.DEBUG)
     handler.setFormatter(formatter)
     handler.addFilter(TaskIdMatchFilter(task_id))
-    handler._vibe_blog_task_handler = True  # type: ignore[attr-defined]
+    handler._vibe_report_task_handler = True  # type: ignore[attr-defined]
 
     root_logger = logging.getLogger()
     _ensure_task_filter(root_logger)  # 确保 TaskIdFilter 已注入

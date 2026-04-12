@@ -1,7 +1,7 @@
 """
 跨任务性能摘要统计模块
 
-从多个 BlogTaskLog 中聚合性能数据，支持三个维度的分析：
+从多个 ReportTaskLog 中聚合性能数据，支持三个维度的分析：
 1. agent_breakdown — 按 Agent 分解耗时和 token
 2. cross_cutting_breakdown — 横切面分解（LLM / 搜索 / 图片生成）
 3. service_workload — 按服务类型分解调用量
@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class BlogPerformanceSummary:
+class ReportPerformanceSummary:
     """跨任务性能摘要统计"""
 
     total_tasks: int = 0
@@ -41,7 +41,7 @@ class BlogPerformanceSummary:
     )
 
     def add_task_log(self, task_log) -> None:
-        """从一个 BlogTaskLog 实例中提取数据并累加"""
+        """从一个 ReportTaskLog 实例中提取数据并累加"""
         self.total_tasks += 1
         self.total_wall_time_ms += getattr(task_log, 'total_duration_ms', 0)
 
@@ -165,7 +165,7 @@ class BlogPerformanceSummary:
 
     def save(self, output_path: str = None) -> None:
         """保存摘要到 JSON 文件"""
-        output_path = output_path or "logs/blog_tasks/performance_summary.json"
+        output_path = output_path or "logs/report_tasks/performance_summary.json"
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
 
         data = {
@@ -180,7 +180,7 @@ class BlogPerformanceSummary:
             json.dump(data, f, ensure_ascii=False, indent=2)
 
     @classmethod
-    def from_log_dir(cls, log_dir: str = "logs/blog_tasks") -> "BlogPerformanceSummary":
+    def from_log_dir(cls, log_dir: str = "logs/report_tasks") -> "ReportPerformanceSummary":
         """从日志目录读取所有任务日志并聚合"""
         summary = cls()
         log_path = Path(log_dir)
@@ -210,7 +210,7 @@ class BlogPerformanceSummary:
 
 
 class _TaskLogProxy:
-    """从 JSON dict 构造的轻量代理，模拟 BlogTaskLog 接口"""
+    """从 JSON dict 构造的轻量代理，模拟 ReportTaskLog 接口"""
 
     def __init__(self, data: dict):
         self.total_duration_ms = data.get("total_duration_ms", 0)

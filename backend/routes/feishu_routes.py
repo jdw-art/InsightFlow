@@ -38,7 +38,7 @@ FEISHU_ENCRYPT_KEY = os.getenv('FEISHU_ENCRYPT_KEY', '')
 FEISHU_API_BASE = 'https://open.feishu.cn/open-apis'
 
 # 内部 API 地址（同进程调用）
-VIBE_BLOG_INTERNAL = os.getenv('VIBE_BLOG_INTERNAL', 'http://localhost:5001')
+VIBE_REPORT_INTERNAL = os.getenv('VIBE_REPORT_INTERNAL', 'http://localhost:5001')
 
 # 飞书卡片模板 ID（在飞书后台卡片搭建工具中创建）
 CARD_TEMPLATES = {
@@ -397,10 +397,10 @@ def _parse_intent(text):
     return {'action': 'auto', 'text': t}
 
 
-HELP_TEXT = """📝 vibe-blog 对话式写作
+HELP_TEXT = """📝 vibe-report 对话式写作
 
 指令：
-• 写 <主题> — 一键生成完整博客
+• 写 <主题> — 一键生成完整报告
 • 新话题 <主题> — 创建写作会话
 • 搜索 — 调研当前主题
 • 大纲 — 生成文章大纲
@@ -417,8 +417,8 @@ HELP_TEXT = """📝 vibe-blog 对话式写作
 # ========== 内部 API 调用 ==========
 
 def _call_chat_api(method, path, user_id, body=None):
-    """调用 vibe-blog 对话式写作 API。"""
-    url = f'{VIBE_BLOG_INTERNAL}{path}'
+    """调用 vibe-report 对话式写作 API。"""
+    url = f'{VIBE_REPORT_INTERNAL}{path}'
     headers = {'Content-Type': 'application/json'}
     if user_id:
         headers['X-User-Id'] = user_id
@@ -465,7 +465,7 @@ def _handle_message(chat_id, user_id, text, message_id):
     try:
         # ---- 帮助 ----
         if intent['action'] == 'help':
-            reply_card('📝 vibe-blog 对话式写作', [
+            reply_card('📝 vibe-report 对话式写作', [
                 _md_element(
                     '**指令列表**\n'
                     '• `写 <主题>` — 一键生成完整博客\n'

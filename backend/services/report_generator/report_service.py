@@ -1,5 +1,5 @@
 """
-博客生成服务 - 封装 BlogGenerator，提供与 vibe-blog 集成的接口
+报告生成服务 - 封装 ReportGenerator，提供与 vibe-report 集成的接口
 """
 
 import logging
@@ -13,7 +13,7 @@ from contextvars import copy_context
 from logging_config import task_id_context
 
 from .queue_bridge import update_queue_status, update_queue_progress
-from .generator import BlogGenerator
+from .generator import ReportGenerator
 from .schemas.state import create_initial_state
 from .services.search_service import SearchService, init_search_service, get_search_service
 from .post_processors.markdown_formatter import MarkdownFormatter
@@ -24,26 +24,26 @@ OUTPUTS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__fil
 
 logger = logging.getLogger(__name__)
 
-# 全局博客生成服务实例
-_blog_service: Optional['BlogService'] = None
+# 全局报告生成服务实例
+_report_service: Optional['ReportService'] = None
 
 
-class BlogService:
+class ReportService:
     """
-    博客生成服务 - 与 vibe-blog 任务管理系统集成
+    报告生成服务 - 与 vibe-report 任务管理系统集成
     """
-    
+
     def __init__(self, llm_client, search_service=None, knowledge_service=None):
         """
-        初始化博客生成服务
-        
+        初始化报告生成服务
+
         Args:
             llm_client: LLM 客户端
             search_service: 搜索服务 (可选)
             knowledge_service: 知识服务 (可选，用于文档知识融合)
         """
         self.knowledge_service = knowledge_service
-        self.generator = BlogGenerator(
+        self.generator = ReportGenerator(
             llm_client=llm_client,
             search_service=search_service,
             knowledge_service=knowledge_service
@@ -80,12 +80,12 @@ class BlogService:
         from services.llm_service import _strip_thinking
 
         system_content = (
-            "你是一个技术博客主题优化助手。用户会给你一个简短的技术关键词或主题，"
-            "你需要将其扩展为一个具体、有吸引力的中文博客标题。\n\n"
+            "你是一个技术报告主题优化助手。用户会给你一个简短的技术关键词或主题，"
+            "你需要将其扩展为一个具体、有吸引力的中文报告标题。\n\n"
             "规则：\n"
             "1. 保留用户的核心技术方向\n"
             "2. 补充具体的技术细节、应用场景或实战角度\n"
-            "3. 标题长度 15-40 个字，适合深度技术博客\n"
+            "3. 标题长度 15-40 个字，适合深度技术报告\n"
             "4. 直接输出优化后的标题，不要加引号、不要解释、不要思考过程\n\n"
             "示例：\n"
             "输入: Redis\n"
@@ -449,7 +449,7 @@ class BlogService:
                 self.task_id = task_id
                 
             def emit(self, record):
-                if self.task_manager and record.name.startswith('services.blog_generator'):
+                if self.task_manager and record.name.startswith('services.report_generator'):
                     # 队列已销毁则自动移除自身，防止 handler 泄漏
                     if not self.task_manager.get_queue(self.task_id):
                         logging.getLogger(record.name).removeHandler(self)
@@ -510,25 +510,25 @@ class BlogService:
         # 添加日志处理器
         sse_handler = None
         sse_logger_names = [
-            "services.blog_generator.generator",
-            "services.blog_generator.agents.researcher",
-            "services.blog_generator.agents.planner",
-            "services.blog_generator.agents.writer",
-            "services.blog_generator.agents.questioner",
-            "services.blog_generator.agents.coder",
-            "services.blog_generator.agents.artist",
-            "services.blog_generator.agents.reviewer",
-            "services.blog_generator.agents.assembler",
-            "services.blog_generator.agents.search_coordinator",
-            "services.blog_generator.services.search_service",
+            "services.report_generator.generator",
+            "services.report_generator.agents.researcher",
+            "services.report_generator.agents.planner",
+            "services.report_generator.agents.writer",
+            "services.report_generator.agents.questioner",
+            "services.report_generator.agents.coder",
+            "services.report_generator.agents.artist",
+            "services.report_generator.agents.reviewer",
+            "services.report_generator.agents.assembler",
+            "services.report_generator.agents.search_coordinator",
+            "services.report_generator.services.search_service",
             "services.image_service",
         ]
         if task_manager:
             sse_handler = SSELogHandler(task_manager, task_id)
             sse_handler.setLevel(logging.INFO)
             sse_handler.setFormatter(logging.Formatter('%(message)s'))
-            
-            # 给所有 blog_generator 相关的 logger 添加处理器
+
+            # 给所有 report_generator 相关的 logger 添加处理器
             for logger_name in sse_logger_names:
                 logging.getLogger(logger_name).addHandler(sse_handler)
         
@@ -578,9 +578,9 @@ class BlogService:
         # 创建结构化任务日志（37.08）
         task_log = None
         try:
-            if os.environ.get('BLOG_TASK_LOG_ENABLED', 'true').lower() == 'true':
-                from .utils.task_log import BlogTaskLog
-                task_log = BlogTaskLog(
+            if os.environ.get('REPORT_TASK_LOG_ENABLED', 'true').lower() == 'true':
+                from .utils.task_log import ReportTaskLog
+                task_log = ReportTaskLog(
                     task_id=task_id,
                     topic=topic,
                     article_type=article_type,
@@ -607,7 +607,7 @@ class BlogService:
                 task_manager.send_event(task_id, 'progress', {
                     'stage': 'start',
                     'progress': 0,
-                    'message': f'开始生成博客: {topic}'
+                    'message': f'开始生成报告: {topic}'
                 })
             
             # 获取文章长度配置
@@ -673,7 +673,7 @@ class BlogService:
             # 101.113: 设置交互式标志，让 _planner_node 使用 interrupt()
             self.generator._interactive = interactive
             
-            config = {"configurable": {"thread_id": f"blog_{task_id}"}}
+            config = {"configurable": {"thread_id": f"report_{task_id}"}}
             
             # 注入 Langfuse 追踪回调（如果已启用）
             # 每个任务创建独立 handler，设置 session_id 使同一任务的 trace 归组
@@ -683,7 +683,7 @@ class BlogService:
                     from langfuse.langchain import CallbackHandler as LangfuseCallbackHandler
                     langfuse_handler = LangfuseCallbackHandler(
                         session_id=task_id,
-                        trace_name=f"blog-gen-{topic[:30]}",
+                        trace_name=f"report-gen-{topic[:30]}",
                         metadata={"task_id": task_id, "topic": topic,
                                   "article_type": article_type, "target_length": target_length},
                     )
@@ -1786,7 +1786,7 @@ class BlogService:
                 if task_manager and task_id:
                     task_manager.send_event(task_id, 'log', {
                         'level': 'INFO',
-                        'logger': 'blog_service',
+                        'logger': 'report_service',
                         'message': f'封面架构图生成完成'
                     })
                 # 返回 (外网URL, 路径/OSS URL, 文章摘要) 元组
@@ -1824,7 +1824,7 @@ class BlogService:
             os.makedirs(OUTPUTS_DIR, exist_ok=True)
             
             # 生成文件名
-            title = outline.get('title', 'blog')
+            title = outline.get('title', 'report')
             # 清理标题中的特殊字符
             safe_title = ''.join(c if c.isalnum() or c in ' _-' else '_' for c in title)[:50]
             timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -1882,39 +1882,39 @@ class BlogService:
             return None
 
 
-def init_blog_service(llm_client, search_service=None, knowledge_service=None) -> BlogService:
+def init_report_service(llm_client, search_service=None, knowledge_service=None) -> ReportService:
     """
-    初始化博客生成服务
-    
+    初始化报告生成服务
+
     Args:
-        llm_client: LLM 客户端 (banana-blog 的 LLMService)
+        llm_client: LLM 客户端 (banana-report 的 LLMService)
         search_service: 搜索服务 (智谱搜索)
         knowledge_service: 知识服务 (可选，用于文档知识融合)
-        
+
     Returns:
-        BlogService 实例
+        ReportService 实例
     """
-    global _blog_service
-    
+    global _report_service
+
     # 创建 LLM 客户端适配器
     llm_adapter = LLMClientAdapter(llm_client)
-    
-    _blog_service = BlogService(llm_adapter, search_service, knowledge_service)
-    logger.info("博客生成服务已初始化")
-    return _blog_service
+
+    _report_service = ReportService(llm_adapter, search_service, knowledge_service)
+    logger.info("报告生成服务已初始化")
+    return _report_service
 
 
 class LLMClientAdapter:
     """
-    LLM 客户端适配器 - 将 banana-blog 的 LLMService 适配为 BlogGenerator 需要的接口
+    LLM 客户端适配器 - 将 banana-report 的 LLMService 适配为 ReportGenerator 需要的接口
     """
-    
+
     def __init__(self, llm_service):
         """
         初始化适配器
 
         Args:
-            llm_service: banana-blog 的 LLMService
+            llm_service: banana-report 的 LLMService
         """
         self.llm_service = llm_service
 
@@ -1974,9 +1974,9 @@ class LLMClientAdapter:
             return self.chat(messages, response_format=response_format, **kwargs)
 
 
-def get_blog_service() -> Optional[BlogService]:
-    """获取博客生成服务实例"""
-    return _blog_service
+def get_report_service() -> Optional[ReportService]:
+    """获取报告生成服务实例"""
+    return _report_service
 
 
 def extract_article_summary(llm_client, title: str, content: str, max_length: int = 500) -> str:
@@ -2006,7 +2006,7 @@ def extract_article_summary(llm_client, title: str, content: str, max_length: in
     content_for_summary = content[:18000] if len(content) > 18000 else content
     
     # 使用统一的 article_summary.j2 模板，在 Prompt 中限定字数
-    from services.blog_generator.prompts import get_prompt_manager
+    from services.report_generator.prompts import get_prompt_manager
     summary_prompt = get_prompt_manager().render_article_summary(title, content_for_summary, max_length=max_length)
 
     try:

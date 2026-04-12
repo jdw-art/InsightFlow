@@ -39,7 +39,7 @@ def _resolve_caller(caller: str) -> str:
     if caller:
         return caller
     try:
-        from services.blog_generator.middleware import current_node_name
+        from services.report_generator.middleware import current_node_name
         node = current_node_name.get("")
         if node:
             return node
@@ -120,10 +120,10 @@ class LLMService:
             'strategic': {'model': strategic_model or self.text_model, 'max_tokens': strategic_max_tokens, 'instance': None},
         }
 
-        # Token 追踪器（由 BlogGenerator 注入，默认 None）
+        # Token 追踪器（由 ReportGenerator 注入，默认 None）
         self.token_tracker = None
 
-        # SSE 事件推送（由 BlogService 注入，默认 None）
+        # SSE 事件推送（由 ReportService 注入，默认 None）
         self.task_manager = None
         self.task_id = None
 

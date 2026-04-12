@@ -98,7 +98,7 @@ class OSSService:
         
         Args:
             local_path: 本地文件路径
-            remote_path: OSS 上的路径 (如 vibe-blog/covers/abc123/cover.png)
+            remote_path: OSS 上的路径 (如 vibe-report/covers/abc123/cover.png)
                         如果不指定，会自动生成
             content_type: 文件 MIME 类型
             skip_if_exists: 如果文件已存在，跳过上传直接返回 URL (默认 True)
@@ -126,7 +126,7 @@ class OSSService:
                 timestamp = datetime.now().strftime('%Y%m%d')
                 unique_id = uuid.uuid4().hex[:8]
                 filename = os.path.basename(local_path)
-                remote_path = f"vibe-blog/images/{timestamp}/{unique_id}_{filename}"
+                remote_path = f"vibe-report/images/{timestamp}/{unique_id}_{filename}"
             
             # 检查文件是否已存在
             if skip_if_exists and self.file_exists(remote_path):
@@ -326,7 +326,7 @@ class OSSService:
         timestamp = datetime.now().strftime('%Y%m%d')
         unique_id = uuid.uuid4().hex[:8]
         filename = f"img_{unique_id}{ext}"
-        remote_path = f"vibe-blog/images/{timestamp}/{filename}"
+        remote_path = f"vibe-report/images/{timestamp}/{filename}"
         
         return self.upload_from_url(source_url, remote_path)
     
@@ -356,7 +356,7 @@ class OSSService:
         timestamp = datetime.now().strftime('%Y%m%d')
         unique_id = uuid.uuid4().hex[:8]
         filename = f"video_{unique_id}{ext}"
-        remote_path = f"vibe-blog/videos/{timestamp}/{filename}"
+        remote_path = f"vibe-report/videos/{timestamp}/{filename}"
         
         return self.upload_from_url(source_url, remote_path)
     

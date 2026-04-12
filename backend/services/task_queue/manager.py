@@ -13,7 +13,7 @@ from datetime import datetime
 from typing import Callable, Optional
 
 from .db import TaskDB
-from .models import BlogTask, ExecutionRecord, QueueStatus
+from .models import ReportTask, ExecutionRecord, QueueStatus
 
 logger = logging.getLogger(__name__)
 
@@ -37,20 +37,20 @@ class TaskQueueManager:
         }
         # 后台常驻协程执行任务
         self._worker_task: Optional[asyncio.Task] = None
-        # 注入BlogService
-        self._blog_generator = None
+        # 注入ReportGenerator
+        self._report_generator = None
 
     async def init(self):
         """初始化数据库 + 恢复未完成任务"""
         await self.db.init()
         await self._recover_queued_tasks()
 
-    def set_blog_generator(self, generator):
-        self._blog_generator = generator
+    def set_report_generator(self, generator):
+        self._report_generator = generator
 
     # ── 公开 API ──
 
-    async def enqueue(self, task: BlogTask) -> str:
+    async def enqueue(self, task: ReportTask) -> str:
         """入队，返回 task_id"""
         queued_count = await self.db.count_by_status(QueueStatus.QUEUED)
         task.queue_position = queued_count + 1
@@ -84,7 +84,7 @@ class TaskQueueManager:
         logger.info(f"[Queue] 已取消: {task_id}")
         return True
 
-    async def get_task(self, task_id: str) -> Optional[BlogTask]:
+    async def get_task(self, task_id: str) -> Optional[ReportTask]:
         return await self.db.get_task(task_id)
 
     async def get_queue_snapshot(self) -> dict:
@@ -184,7 +184,7 @@ class TaskQueueManager:
             task.progress = 0
             await self.db.save_task(task)
             await self._emit('task_started', task)
-            result = await self._run_blog_generation(task)
+            result = await self._run_report_generation(task)
             task.status = QueueStatus.COMPLETED
             task.completed_at = datetime.now()
             task.progress = 100
@@ -231,9 +231,9 @@ class TaskQueueManager:
         finally:
             self._semaphore.release()
 
-    async def _run_blog_generation(self, task: BlogTask) -> dict | None:
-        if not self._blog_generator:
-            raise RuntimeError("BlogGenerator 未注入")
+    async def _run_report_generation(self, task: ReportTask) -> dict | None:
+        if not self._report_generator:
+            raise RuntimeError("ReportGenerator 未注入")
         config = {
             'topic': task.generation.topic,
             'article_type': task.generation.article_type,
@@ -244,7 +244,7 @@ class TaskQueueManager:
         async def progress_callback(progress, stage, detail=""):
             await self.update_progress(task.id, progress, stage, detail)
 
-        return await self._blog_generator.generate(
+        return await self._report_generator.generate(
             config=config, progress_callback=progress_callback,
         )
 
@@ -284,7 +284,7 @@ class TaskQueueManager:
         if event in self._callbacks:
             self._callbacks[event].append(callback)
 
-    async def _emit(self, event: str, task: BlogTask):
+    async def _emit(self, event: str, task: ReportTask):
         """
         事件派发：当任务状态发生变化时（比如从“排队”变成“运行中”），通知所有关注这个变化的“观察者”去执行相应的动作
         """

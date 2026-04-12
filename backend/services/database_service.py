@@ -22,13 +22,13 @@ class DatabaseService:
         初始化数据库服务
         
         Args:
-            db_path: 数据库文件路径，默认为 backend/data/banana_blog.db
+            db_path: 数据库文件路径，默认为 backend/data/banana_report.db
                     在 Vercel 等只读环境中，自动使用内存数据库
         """
         if db_path is None:
-            # 默认路径: backend/data/banana_blog.db
+            # 默认路径: backend/data/banana_report.db
             base_dir = Path(__file__).parent.parent
-            db_path = str(base_dir / "data" / "banana_blog.db")
+            db_path = str(base_dir / "data" / "banana_report.db")
         
         self.db_path = db_path
         

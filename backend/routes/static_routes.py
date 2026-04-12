@@ -70,7 +70,7 @@ def api_docs():
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vibe Blog - 技术科普绘本生成器</title>
+    <title>InsightFlow - 智能行业分析系统</title>
     <style>
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
         h1 { color: #FF6B35; }
@@ -81,8 +81,8 @@ def api_docs():
     </style>
 </head>
 <body>
-    <h1>🍌 vibe-blog</h1>
-    <p>技术科普绘本生成器 - 让复杂技术变得人人都能懂</p>
+    <h1>🍌 vibe-report</h1>
+    <p>技术科普报告生成器 - 让复杂技术变得人人都能懂</p>
 
     <h2>API 端点</h2>
 

@@ -4,7 +4,7 @@ Blueprint 路由注册
 from routes.static_routes import static_bp
 from routes.transform_routes import transform_bp
 from routes.task_routes import task_bp
-from routes.blog_routes import blog_bp
+from routes.report_routes import report_bp
 from routes.history_routes import history_bp
 from routes.queue_routes import queue_bp
 from routes.chat_routes import chat_bp
@@ -17,7 +17,7 @@ def register_all_blueprints(app):
     app.register_blueprint(static_bp)
     app.register_blueprint(transform_bp)
     app.register_blueprint(task_bp)
-    app.register_blueprint(blog_bp)
+    app.register_blueprint(report_bp)
     app.register_blueprint(history_bp)
     app.register_blueprint(queue_bp)
     app.register_blueprint(chat_bp)

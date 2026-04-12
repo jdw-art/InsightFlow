@@ -42,11 +42,11 @@ def submit_task():
         return jsonify({'error': '缺少 topic 参数'}), 400
 
     from services.task_queue.models import (
-        BlogTask, BlogGenerationConfig,
+        ReportTask, ReportGenerationConfig,
         TriggerConfig, TaskPriority,
     )
 
-    generation = BlogGenerationConfig(
+    generation = ReportGenerationConfig(
         topic=data['topic'],
         article_type=data.get('article_type', 'tutorial'),
         target_length=data.get('target_length', 'medium'),
@@ -56,8 +56,8 @@ def submit_task():
     priority = TaskPriority(priority_val) if priority_val in (0, 5, 10) \
         else TaskPriority.NORMAL
 
-    task = BlogTask(
-        name=data.get('name', f"博客: {data['topic'][:30]}"),
+    task = ReportTask(
+        name=data.get('name', f"报告: {data['topic'][:30]}"),
         description=data.get('description'),
         generation=generation,
         priority=priority,

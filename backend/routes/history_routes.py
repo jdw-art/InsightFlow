@@ -131,7 +131,7 @@ def export_markdown_with_images():
             return jsonify({'success': False, 'error': '缺少 markdown 参数'}), 400
 
         markdown_content = data.get('markdown', '')
-        title = data.get('title', 'blog')
+        title = data.get('title', 'report')
 
         safe_title = re.sub(r'[^\w\u4e00-\u9fa5_-]', '_', title)[:50]
 
@@ -189,7 +189,7 @@ def export_word():
             return jsonify({'success': False, 'error': '缺少 markdown 参数'}), 400
 
         markdown_content = data.get('markdown', '')
-        title = data.get('title', 'blog')
+        title = data.get('title', 'report')
         safe_title = re.sub(r'[^\w\u4e00-\u9fa5_-]', '_', title)[:50]
 
         try:

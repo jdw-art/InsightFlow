@@ -1,5 +1,5 @@
 """
-BlogMemoryConfig — 博客记忆系统配置（102.03）
+ReportMemoryConfig — 报告记忆系统配置（102.03）
 """
 
 import os
@@ -7,8 +7,8 @@ from dataclasses import dataclass, field
 
 
 @dataclass
-class BlogMemoryConfig:
-    """博客记忆系统配置"""
+class ReportMemoryConfig:
+    """报告记忆系统配置"""
     enabled: bool = True
     storage_backend: str = "json"       # json | sqlite（预留）
     storage_path: str = "data/memory/"
@@ -19,7 +19,7 @@ class BlogMemoryConfig:
     max_injection_tokens: int = 1500
 
     @classmethod
-    def from_env(cls) -> "BlogMemoryConfig":
+    def from_env(cls) -> "ReportMemoryConfig":
         """从环境变量加载配置"""
         return cls(
             enabled=os.getenv("MEMORY_ENABLED", "true").lower() == "true",

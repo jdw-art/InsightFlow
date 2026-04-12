@@ -462,13 +462,13 @@ class GracefulDegradationMiddleware(ExtendedMiddleware):
 
 class TaskLogMiddleware:
     """
-    任务日志中间件 — 自动记录每个节点的执行耗时到 BlogTaskLog。
+    任务日志中间件 — 自动记录每个节点的执行耗时到 ReportTaskLog。
 
     利用 wrap_node 已计算的 _last_duration_ms，在 after_node 中
     调用 task_log.log_step() 写入结构化日志。生成结束后 task log JSON
     中即包含完整的 step 级耗时分解。
 
-    需要在 generator 中通过 set_task_log() 注入 BlogTaskLog 实例。
+    需要在 generator 中通过 set_task_log() 注入 ReportTaskLog 实例。
     """
 
     def __init__(self):

@@ -1,6 +1,6 @@
 """
-博客生成路由
-/api/blog/upload, /api/blog/generate, /api/blog/documents, etc.
+报告生成路由
+/api/report/upload, /api/report/generate, /api/report/documents, etc.
 """
 import os
 import uuid
@@ -10,8 +10,8 @@ import threading
 from flask import Blueprint, jsonify, request, current_app
 
 from services import (
-    get_llm_service, get_blog_service,
-    get_task_manager, init_blog_service,
+    get_llm_service, get_report_service,
+    get_task_manager, init_report_service,
     init_search_service, get_search_service,
 )
 from services.database_service import get_db_service
@@ -20,7 +20,7 @@ from services.knowledge_service import get_knowledge_service
 
 logger = logging.getLogger(__name__)
 
-blog_bp = Blueprint('blog', __name__)
+report_bp = Blueprint('report', __name__)
 
 
 def _record_task_to_queue(task_id: str, topic: str, article_type: str,
@@ -33,12 +33,12 @@ def _record_task_to_queue(task_id: str, topic: str, article_type: str,
             return
         import asyncio
         from services.task_queue.models import (
-            BlogTask, BlogGenerationConfig, QueueStatus,
+            ReportTask, ReportGenerationConfig, QueueStatus,
         )
-        task = BlogTask(
+        task = ReportTask(
             id=task_id,
-            name=f"博客: {topic[:30]}",
-            generation=BlogGenerationConfig(
+            name=f"报告: {topic[:30]}",
+            generation=ReportGenerationConfig(
                 topic=topic,
                 article_type=article_type,
                 target_length=target_length,
@@ -52,8 +52,8 @@ def _record_task_to_queue(task_id: str, topic: str, article_type: str,
         logger.debug(f"记录任务到排队系统失败 (非关键): {e}")
 
 
-def init_blog_services(app_config):
-    """初始化搜索服务和博客生成服务（在 create_app 中调用）"""
+def init_report_services(app_config):
+    """初始化搜索服务和报告生成服务（在 create_app 中调用）"""
     try:
         init_search_service(app_config)
         search_service = get_search_service()
@@ -64,7 +64,7 @@ def init_blog_services(app_config):
 
         # 75.02 Serper Google 搜索
         try:
-            from services.blog_generator.services.serper_search_service import init_serper_service
+            from services.report_generator.services.serper_search_service import init_serper_service
             serper = init_serper_service(app_config)
             if serper and serper.is_available():
                 logger.info("Serper Google 搜索服务已初始化")
@@ -73,7 +73,7 @@ def init_blog_services(app_config):
 
         # 75.07 搜狗搜索（腾讯云 SearchPro）
         try:
-            from services.blog_generator.services.sogou_search_service import init_sogou_service
+            from services.report_generator.services.sogou_search_service import init_sogou_service
             sogou = init_sogou_service(app_config)
             if sogou:
                 logger.info("搜狗搜索服务已初始化")
@@ -83,13 +83,13 @@ def init_blog_services(app_config):
         llm_service = get_llm_service()
         knowledge_service = get_knowledge_service()
         if llm_service and llm_service.is_available():
-            init_blog_service(llm_service, search_service, knowledge_service)
-            logger.info("博客生成服务已初始化（含知识融合支持）")
+            init_report_service(llm_service, search_service, knowledge_service)
+            logger.info("报告生成服务已初始化（含知识融合支持）")
     except Exception as e:
-        logger.warning(f"博客生成服务初始化失败: {e}")
+        logger.warning(f"报告生成服务初始化失败: {e}")
 
 
-@blog_bp.route('/api/blog/upload', methods=['POST'])
+@report_bp.route('/api/report/upload', methods=['POST'])
 def upload_document():
     """上传知识文档"""
     try:
@@ -197,7 +197,7 @@ def upload_document():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@blog_bp.route('/api/blog/upload/<document_id>/status', methods=['GET'])
+@report_bp.route('/api/report/upload/<document_id>/status', methods=['GET'])
 def get_document_status(document_id):
     """获取文档解析状态"""
     db_service = get_db_service()
@@ -224,7 +224,7 @@ def get_document_status(document_id):
     })
 
 
-@blog_bp.route('/api/blog/upload/<document_id>', methods=['DELETE'])
+@report_bp.route('/api/report/upload/<document_id>', methods=['DELETE'])
 def delete_document(document_id):
     """删除文档"""
     db_service = get_db_service()
@@ -242,7 +242,7 @@ def delete_document(document_id):
     return jsonify({'success': True, 'message': '文档已删除'})
 
 
-@blog_bp.route('/api/blog/documents', methods=['GET'])
+@report_bp.route('/api/report/documents', methods=['GET'])
 def list_documents():
     """列出所有文档"""
     db_service = get_db_service()
@@ -256,9 +256,9 @@ def list_documents():
     })
 
 
-@blog_bp.route('/api/blog/generate', methods=['POST'])
-def generate_blog():
-    """创建长文博客生成任务"""
+@report_bp.route('/api/report/generate', methods=['POST'])
+def generate_report():
+    """创建长文报告生成任务"""
     try:
         data = request.get_json()
 
@@ -290,11 +290,11 @@ def generate_blog():
             except ValueError as e:
                 return jsonify({'success': False, 'error': f'自定义配置验证失败: {str(e)}'}), 400
 
-        logger.info(f"📝 博客生成请求: topic={topic}, article_type={article_type}, target_audience={target_audience}, audience_adaptation={audience_adaptation}, target_length={target_length}, document_ids={document_ids}, image_style={image_style}, custom_config={custom_config}")
+        logger.info(f"📝 报告生成请求: topic={topic}, article_type={article_type}, target_audience={target_audience}, audience_adaptation={audience_adaptation}, target_length={target_length}, document_ids={document_ids}, image_style={image_style}, custom_config={custom_config}")
 
-        blog_service = get_blog_service()
-        if not blog_service:
-            return jsonify({'success': False, 'error': '博客生成服务不可用'}), 500
+        report_service = get_report_service()
+        if not report_service:
+            return jsonify({'success': False, 'error': '报告生成服务不可用'}), 500
 
         document_knowledge = []
         if document_ids:
@@ -318,7 +318,7 @@ def generate_blog():
 
         _record_task_to_queue(task_id, topic, article_type, target_length, image_style)
 
-        blog_service.generate_async(
+        report_service.generate_async(
             task_id=task_id,
             topic=topic,
             article_type=article_type,
@@ -340,18 +340,18 @@ def generate_blog():
         return jsonify({
             'success': True,
             'task_id': task_id,
-            'message': '博客生成任务已创建，请订阅 /api/tasks/{task_id}/stream 获取进度',
+            'message': '报告生成任务已创建，请订阅 /api/tasks/{task_id}/stream 获取进度',
             'document_count': len(document_knowledge)
         }), 202
 
     except Exception as e:
-        logger.error(f"创建博客生成任务失败: {e}", exc_info=True)
+        logger.error(f"创建报告生成任务失败: {e}", exc_info=True)
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@blog_bp.route('/api/blog/generate/mini', methods=['POST'])
-def generate_blog_mini():
-    """创建 Mini 版博客生成任务（1个章节，完整流程）"""
+@report_bp.route('/api/report/generate/mini', methods=['POST'])
+def generate_report_mini():
+    """创建 Mini 版报告生成任务（1个章节，完整流程）"""
     try:
         data = request.get_json()
 
@@ -366,18 +366,18 @@ def generate_blog_mini():
         audience_adaptation = data.get('audience_adaptation', 'default')
         image_style = data.get('image_style', '')
 
-        logger.info(f"📝 Mini 博客生成请求: topic={topic}, article_type={article_type}, audience_adaptation={audience_adaptation}, image_style={image_style}")
+        logger.info(f"📝 Mini 报告生成请求: topic={topic}, article_type={article_type}, audience_adaptation={audience_adaptation}, image_style={image_style}")
 
-        blog_service = get_blog_service()
-        if not blog_service:
-            return jsonify({'success': False, 'error': '博客生成服务不可用'}), 500
+        report_service = get_report_service()
+        if not report_service:
+            return jsonify({'success': False, 'error': '报告生成服务不可用'}), 500
 
         task_manager = get_task_manager()
         task_id = task_manager.create_task()
 
         _record_task_to_queue(task_id, topic, article_type, 'mini', image_style)
 
-        blog_service.generate_async(
+        report_service.generate_async(
             task_id=task_id,
             topic=topic,
             article_type=article_type,
@@ -396,17 +396,17 @@ def generate_blog_mini():
         return jsonify({
             'success': True,
             'task_id': task_id,
-            'message': 'Mini 博客生成任务已创建（1个章节完整流程），请订阅 /api/tasks/{task_id}/stream 获取进度'
+            'message': 'Mini 报告生成任务已创建（1个章节完整流程），请订阅 /api/tasks/{task_id}/stream 获取进度'
         }), 202
 
     except Exception as e:
-        logger.error(f"创建 Mini 博客生成任务失败: {e}", exc_info=True)
+        logger.error(f"创建 Mini 报告生成任务失败: {e}", exc_info=True)
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@blog_bp.route('/api/blog/generate/sync', methods=['POST'])
-def generate_blog_sync():
-    """同步生成长文博客 (适用于短文章或测试)"""
+@report_bp.route('/api/report/generate/sync', methods=['POST'])
+def generate_report_sync():
+    """同步生成长文报告 (适用于短文章或测试)"""
     try:
         data = request.get_json()
 
@@ -422,11 +422,11 @@ def generate_blog_sync():
         target_length = data.get('target_length', 'medium')
         source_material = data.get('source_material', None)
 
-        blog_service = get_blog_service()
-        if not blog_service:
-            return jsonify({'success': False, 'error': '博客生成服务不可用'}), 500
+        report_service = get_report_service()
+        if not report_service:
+            return jsonify({'success': False, 'error': '报告生成服务不可用'}), 500
 
-        result = blog_service.generate_sync(
+        result = report_service.generate_sync(
             topic=topic,
             article_type=article_type,
             target_audience=target_audience,
@@ -437,11 +437,11 @@ def generate_blog_sync():
         return jsonify(result)
 
     except Exception as e:
-        logger.error(f"博客生成失败: {e}", exc_info=True)
+        logger.error(f"报告生成失败: {e}", exc_info=True)
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@blog_bp.route('/api/blog/enhance-topic', methods=['POST'])
+@report_bp.route('/api/report/enhance-topic', methods=['POST'])
 def enhance_topic():
     """优化用户输入的主题（Prompt 增强）"""
     try:
@@ -453,11 +453,11 @@ def enhance_topic():
         if not topic:
             return jsonify({'success': False, 'error': '请提供 topic 参数'}), 400
 
-        blog_service = get_blog_service()
-        if not blog_service:
-            return jsonify({'success': False, 'error': '博客生成服务不可用'}), 500
+        report_service = get_report_service()
+        if not report_service:
+            return jsonify({'success': False, 'error': '报告生成服务不可用'}), 500
 
-        enhanced = blog_service.enhance_topic(topic)
+        enhanced = report_service.enhance_topic(topic)
 
         return jsonify({
             'success': True,
@@ -470,7 +470,7 @@ def enhance_topic():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@blog_bp.route('/api/tasks/<task_id>/resume', methods=['POST'])
+@report_bp.route('/api/tasks/<task_id>/resume', methods=['POST'])
 def resume_task(task_id):
     """恢复中断的任务（101.113 LangGraph interrupt 方案）"""
     try:
@@ -484,11 +484,11 @@ def resume_task(task_id):
         if action == 'edit' and not outline:
             return jsonify({'success': False, 'error': 'edit 操作需要提供 outline'}), 400
 
-        blog_service = get_blog_service()
-        if not blog_service:
-            return jsonify({'success': False, 'error': '博客生成服务不可用'}), 500
+        report_service = get_report_service()
+        if not report_service:
+            return jsonify({'success': False, 'error': '报告生成服务不可用'}), 500
 
-        success = blog_service.resume_generation(task_id, action=action, outline=outline)
+        success = report_service.resume_generation(task_id, action=action, outline=outline)
         if not success:
             return jsonify({'success': False, 'error': '任务不存在或未在等待确认'}), 404
 
@@ -499,30 +499,30 @@ def resume_task(task_id):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@blog_bp.route('/api/tasks/<task_id>/confirm-outline', methods=['POST'])
+@report_bp.route('/api/tasks/<task_id>/confirm-outline', methods=['POST'])
 def confirm_outline(task_id):
     """确认大纲 — 兼容旧接口，内部转发到 resume"""
     return resume_task(task_id)
 
 
-@blog_bp.route('/api/blog/<blog_id>/evaluate', methods=['POST'])
-def evaluate_article(blog_id):
+@report_bp.route('/api/report/<report_id>/evaluate', methods=['POST'])
+def evaluate_article(report_id):
     """评估文章质量"""
     try:
         db_service = get_db_service()
-        blog = db_service.get_history(blog_id)
-        if not blog:
+        report = db_service.get_history(report_id)
+        if not report:
             return jsonify({'success': False, 'error': '文章不存在'}), 404
 
-        blog_service = get_blog_service()
-        if not blog_service:
-            return jsonify({'success': False, 'error': '博客生成服务不可用'}), 500
+        report_service = get_report_service()
+        if not report_service:
+            return jsonify({'success': False, 'error': '报告生成服务不可用'}), 500
 
-        content = blog.get('markdown_content', '') or blog.get('content', '')
-        title = blog.get('topic', '') or blog.get('title', '')
-        article_type = blog.get('article_type', '')
+        content = report.get('markdown_content', '') or report.get('content', '')
+        title = report.get('topic', '') or report.get('title', '')
+        article_type = report.get('article_type', '')
 
-        evaluation = blog_service.evaluate_article(content, title=title, article_type=article_type)
+        evaluation = report_service.evaluate_article(content, title=title, article_type=article_type)
 
         return jsonify({
             'success': True,

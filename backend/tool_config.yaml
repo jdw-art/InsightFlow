@@ -1,4 +1,4 @@
-# VibeBlog 工具配置 — 配置驱动工具系统 (102.08)
+# VibeReport 工具配置 — 配置驱动工具系统 (102.08)
 #
 # 格式说明：
 #   name:  工具名称（唯一标识）
@@ -19,7 +19,7 @@ tools:
   # ===== 搜索工具 =====
   - name: zhipu_search
     group: search
-    use: services.blog_generator.tools.zhipu:ZhipuSearchTool
+    use: services.report_generator.tools.zhipu:ZhipuSearchTool
     api_key: $ZAI_SEARCH_API_KEY
     api_base: $ZAI_SEARCH_API_BASE
     search_engine: search_pro_quark
@@ -27,14 +27,14 @@ tools:
 
   - name: serper_search
     group: search
-    use: services.blog_generator.tools.serper:SerperSearchTool
+    use: services.report_generator.tools.serper:SerperSearchTool
     api_key: $SERPER_API_KEY
     timeout: 10
     max_results: 10
 
   - name: sogou_search
     group: search
-    use: services.blog_generator.tools.sogou:SogouSearchTool
+    use: services.report_generator.tools.sogou:SogouSearchTool
     secret_id: $TENCENTCLOUD_SECRET_ID
     secret_key: $TENCENTCLOUD_SECRET_KEY
     timeout: 10
@@ -42,12 +42,12 @@ tools:
 
   - name: arxiv_search
     group: search
-    use: services.blog_generator.tools.arxiv:ArxivSearchTool
+    use: services.report_generator.tools.arxiv:ArxivSearchTool
     max_results: 5
 
   - name: scholar_search
     group: search
-    use: services.blog_generator.tools.scholar:ScholarSearchTool
+    use: services.report_generator.tools.scholar:ScholarSearchTool
     api_key: $SERPER_API_KEY
     timeout: 10
     max_results: 10
@@ -55,11 +55,11 @@ tools:
   # ===== 爬虫工具 =====
   - name: jina_reader
     group: crawl
-    use: services.blog_generator.tools.jina:JinaCrawlTool
+    use: services.report_generator.tools.jina:JinaCrawlTool
     api_key: $JINA_API_KEY
     timeout: 30
 
   - name: httpx_scraper
     group: crawl
-    use: services.blog_generator.tools.httpx_crawl:HttpxCrawlTool
+    use: services.report_generator.tools.httpx_crawl:HttpxCrawlTool
     timeout: 20

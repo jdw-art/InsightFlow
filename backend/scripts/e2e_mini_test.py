@@ -1,6 +1,6 @@
 """
-E2E Mini Blog Generation — Playwright + Log Monitor
-启动浏览器生成一篇 mini 博客，监控后端日志，检测新模块是否生效
+E2E Mini Report Generation — Playwright + Log Monitor
+启动浏览器生成一篇 mini 报告，监控后端日志，检测新模块是否生效
 """
 import asyncio
 import json
@@ -19,10 +19,10 @@ async def main():
     print("E2E Mini Blog Generation Test")
     print("=" * 60)
 
-    # Step 1: 通过 API 直接发起 mini 博客生成（更可靠）
-    print("\n[Step 1] 通过 API 发起 mini 博客生成...")
+    # Step 1: 通过 API 直接发起 mini 报告生成（更可靠）
+    print("\n[Step 1] 通过 API 发起 mini 报告生成...")
     async with httpx.AsyncClient(timeout=30) as client:
-        resp = await client.post(f"{BACKEND_URL}/api/blog/generate", json={
+        resp = await client.post(f"{BACKEND_URL}/api/report/generate", json={
             "topic": TOPIC,
             "target_length": "mini",
             "image_style": "default",

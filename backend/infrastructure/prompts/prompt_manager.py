@@ -1,8 +1,8 @@
 """
 统一 Prompt 管理器 - 使用 Jinja2 模板管理所有 Prompt
 
-基于 blog_generator 版本改造，支持多子目录模板加载。
-模板引用使用子目录前缀：render("blog/planner", ...) 替代 render("planner", ...)
+基于 report_generator 版本改造，支持多子目录模板加载。
+模板引用使用子目录前缀：render("report/planner", ...) 替代 render("planner", ...)
 """
 
 import os
