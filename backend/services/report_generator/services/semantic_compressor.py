@@ -50,6 +50,8 @@ class EmbeddingProvider:
             if self._model is None:
                 self._model = OpenAIEmbeddings(
                     model=os.environ.get('EMBEDDING_MODEL', 'text-embedding-3-small'),
+                    api_key=os.environ.get('EMBEDDING_API_KEY', ''),
+                    api_base=os.environ.get('EMBEDDING_API_BASE', '')
                 )
             return self._model.embed_documents(texts)
         except Exception as e:

@@ -91,7 +91,10 @@ def init_report_services(app_config):
 
 @report_bp.route('/api/report/upload', methods=['POST'])
 def upload_document():
-    """上传知识文档"""
+    """
+    上传知识文档
+    文档解析内容入库 chunk后chunk入库 存在图片则进行图片描述
+    """
     try:
         if 'file' not in request.files:
             return jsonify({'success': False, 'error': '请上传文件'}), 400
